@@ -6,7 +6,7 @@ Note: The following has only been tested under Linux, might require additional w
 - installation of ECMWF API to access public data sets (https://software.ecmwf.int/wiki/display/WEBAPI/Access+ECMWF+Public+Datasets), including registration of a user account
 
 ## Download ECMWF forecast data
-- run data_retrieval/forecasts/retrieve_ecmwf_fc_data.py (requires ECMWF API)
+- run data_retrieval/forecasts/retrieve_ecmwf_fc_data.py (requires ECMWF API, may take minutes to hours for each of the 10 requested years)
 - download grib data from http://apps.ecmwf.int/webmars/joblist/
 - convert grib data to netCDF for better handling in Python and R:
     - navigate to folder with downloaded grib files

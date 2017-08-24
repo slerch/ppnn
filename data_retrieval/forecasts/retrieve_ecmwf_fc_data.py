@@ -26,11 +26,13 @@ def retrieve_tigge_data():
     dates = date1
     for j in range(0,10):
         dates[j] = date1[j] + "/to/" + date2[j]
-    mem_numbers = ''.join([''.join([str(i) + "/" for i in xrange(1,50)]),'50'])    
+    mem_numbers = ''.join([''.join([str(i) + "/" for i in xrange(1,50)]),'50']) 
+    data_dir = "/media/sebastian/Elements/Postproc_NN/data/forecasts/" 
     for date in dates:
-        tigge_request(date)
+        target = data_dir + "ecmwf_t2m_" + date[:4] + ".grib"
+        tigge_request(date, target)
           
-def tigge_request(date):
+def tigge_request(date, target):
     '''
        A TIGGE request for ECMWF perturbed forecasts of T2M.
     '''
@@ -48,6 +50,7 @@ def tigge_request(date):
         'date'      : date,
         'type'      : "pf",
         'class'     : "ti",
+        'target'    : target,
     })
  
 if __name__ == '__main__':
