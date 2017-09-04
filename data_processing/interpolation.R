@@ -184,7 +184,7 @@ for(filename in other_files){
                         z = fc_raw_temp[lon_pos, lat_pos, mem, vtime_pos],
                         x0 = thisst_lon, y0 = thisst_lat)$z      
         # ... and convert to degrees Celsius  
-        fc_interpolated_temp_append[thisst_pos, mem, vtime_pos] <- tmp
+        fc_interpolated_temp_append[thisst_pos, mem, vtime_pos] <- tmp - 273.15
       }
     }
   }
