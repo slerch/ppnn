@@ -173,24 +173,90 @@ summary(crpsout_ens)
 #   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 # 0.5773  0.9726  1.1574  1.2175  1.3858  5.6086 
 
+produce_pdfs <- FALSE
+pdf_folder <- "/home/sebastian/Projects/PP_NN/code/standard_postprocessing/preliminary_results/"
 
+if(produce_pdfs){
+  pdf(paste0(pdf_folder, "crpsdiff_emos_global.pdf"), width = 6, height = 5, pointsize = 12)
+}
 plot(dates_fit, crpsout_ens - crpsout_n, type = "l")
 abline(h = 0, lty = 2)
-
-
-months_fit <- format(dates_fit, "%Y%m")
-crpsout_ens_monthly <- NULL
-crpsout_n_monthly <- NULL
-for(i in 1:length(unique(months_fit))){
-  crpsout_ens_monthly[i] <- mean(crpsout_ens[which(months_fit == unique(months_fit)[i])])
-  crpsout_n_monthly[i] <- mean(crpsout_n[which(months_fit == unique(months_fit)[i])])
+if(produce_pdfs){
+  dev.off()
 }
-plot(crpsout_ens_monthly - crpsout_n_monthly, type = "l",
-     ylim = c(0,0.5))
-abline(v = 0:9*12, lty = 3)
+
+# months_fit <- format(dates_fit, "%Y%m")
+# crpsout_ens_monthly <- NULL
+# crpsout_n_monthly <- NULL
+# for(i in 1:length(unique(months_fit))){
+#   crpsout_ens_monthly[i] <- mean(crpsout_ens[which(months_fit == unique(months_fit)[i])])
+#   crpsout_n_monthly[i] <- mean(crpsout_n[which(months_fit == unique(months_fit)[i])])
+# }
+# plot(crpsout_ens_monthly - crpsout_n_monthly, type = "l",
+#      ylim = c(0,0.5))
+# abline(v = 0:9*12, lty = 3)
+# abline(h = 0, lty = 2)
+
+
+## rolling mean
+# based on http://www.cookbook-r.com/Manipulating_data/Calculating_a_moving_average/
+movingAverage_ignoreNA <- function(x, n = 1) {
+  before <- floor((n-1)/2)
+  after <- ceiling((n-1)/2)
+  
+  # Track the sum and count of number of non-NA items
+  s <- rep(0, length(x))
+  count <- rep(0, length(x))
+  
+  # Add the centered data 
+  new <- x
+  # Add to count list wherever there isn't a 
+  count <- count + !is.na(new)
+  # Now replace NA_s with 0_s and add to total
+  new[is.na(new)] <- 0
+  s <- s + new
+  
+  # Add the data from before
+  i <- 1
+  while (i <= before) {
+    # This is the vector with offset values to add
+    new <- c(rep(NA, i), x[1:(length(x)-i)])
+    count <- count + !is.na(new)
+    new[is.na(new)] <- 0
+    s <- s + new
+    i <- i+1
+  }
+  
+  # Add the data from after
+  i <- 1
+  while (i <= after) {
+    # This is the vector with offset values to add
+    new   <- c(x[(i+1):length(x)], rep(NA, i))
+    count <- count + !is.na(new)
+    new[is.na(new)] <- 0
+    s <- s + new
+    i <- i+1
+  }
+  
+  # return sum divided by count
+  s/count
+}
+k <- 50
+if(produce_pdfs){
+  pdf(paste0(pdf_folder, "crps_rollingmean_emos_global.pdf"), width = 12, height = 5, pointsize = 12)
+}
+par(mfrow = c(1,2))
+plot(dates_fit, movingAverage_ignoreNA(crpsout_ens, k), type = "l", ylim = c(0.75,1.75),
+     main = "50 day rolling mean", ylab = "mean CRPS")
+lines(dates_fit, movingAverage_ignoreNA(crpsout_n, k), col = "blue")
+legend("topright", legend = c("Ensemble", "EMOS global"), lty = c(1,1), col = c("black", "blue"), bty = "n")
+
+plot(dates_fit, movingAverage_ignoreNA(crpsout_ens, k)-movingAverage_ignoreNA(crpsout_n, k), type = "l", 
+     main = "50 day rolling mean", ylab = "mean CRPS difference: Ens - EMOS")
 abline(h = 0, lty = 2)
-
-
+if(produce_pdfs){
+  dev.off()
+}
 
 months_fit <- format(dates_fit, "%m")
 crpsout_ens_monthly <- NULL
@@ -199,9 +265,17 @@ for(i in 1:length(unique(months_fit))){
   crpsout_ens_monthly[i] <- mean(crpsout_ens[which(months_fit == unique(months_fit)[i])])
   crpsout_n_monthly[i] <- mean(crpsout_n[which(months_fit == unique(months_fit)[i])])
 }
-plot(unique(format(dates_fit, "%m")), crpsout_ens_monthly - crpsout_n_monthly, type = "l",
-     ylim = c(0,0.3))
-abline(h = 0, lty = 2)
+# plot(unique(format(dates_fit, "%m")), crpsout_ens_monthly - crpsout_n_monthly, type = "l",
+#      ylim = c(0,0.3))
+# abline(h = 0, lty = 2)
 
-plot(unique(format(dates_fit, "%m")), crpsout_ens_monthly, type = "l", ylim = range(c(crpsout_ens_monthly, crpsout_n_monthly)))
-lines(unique(format(dates_fit, "%m")), crpsout_n_monthly, col = "blue")
+if(produce_pdfs){
+  pdf(paste0(pdf_folder, "crps_monthlymean_emos_global.pdf"), width = 6, height = 5, pointsize = 12)
+}
+plot(unique(format(dates_fit, "%m")), crpsout_ens_monthly, type = "o", ylim = range(c(crpsout_ens_monthly, crpsout_n_monthly)),
+     main = "monthly mean CRPS", ylab = "mean CRPS", xlab = "month")
+lines(unique(format(dates_fit, "%m")), crpsout_n_monthly, col = "blue", type = "o")
+legend("top", legend = c("Ensemble", "EMOS global"), lty = c(1,1), col = c("black", "blue"), bty = "n")
+if(produce_pdfs){
+  dev.off()
+}
