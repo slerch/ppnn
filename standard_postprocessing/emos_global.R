@@ -26,6 +26,11 @@ if(as.character(packageVersion("scoringRules")) < "0.9.3"){
 }
 
 # objective function for minimum CRPS estimation of parameters
+# we fit an EMOS model N(mu, sigma), where
+# the mean value mu = a + b * ensmean, and
+# the variance sigma^2 = c + d * ensvar
+# a,b,c,d are determined by minimizing the mean CRPS over a
+# training set of past forecasts and observations
 objective_fun <- function(par, ensmean, ensvar, obs){
   m <- cbind(1, ensmean) %*% par[1:2]
   ssq_tmp <- cbind(1, ensvar) %*% par[3:4]
@@ -38,6 +43,9 @@ objective_fun <- function(par, ensmean, ensvar, obs){
 }
 
 # gradient of objective function to use in optim()
+#   including the gradient of the CRPS (as function of a,b,c,d)
+#   allows faster numerical optmization as the gradient does
+#   not need to be determined numerically
 gradfun_wrapper <- function(par, obs, ensmean, ensvar){
   loc <- cbind(1, ensmean) %*% par[1:2]
   sc <- sqrt(cbind(1, ensvar) %*% par[3:4])
@@ -49,10 +57,18 @@ gradfun_wrapper <- function(par, obs, ensmean, ensvar){
   return(as.numeric(cbind(out1,out2)))
 }
 
+# vector of validhours (00/12 UTC) to be able to select only forecast cases 
+# with that specific valid hour for training
 dates_validhour <- format(dates, '%H')
-# global EMOS 
-# date = validdate for which EMOS coefficients should be determined (should be from dates vector)
+
+## main postprocessing function for a global EMOS 
+# i.e., using all available stations for training. Argiments:
+## input:
+# vdate = validdate for which EMOS coefficients should be determined (should be from dates vector)
+#         by the function
 #         for 00 UTC forecasts, only past 00 UTC fc cases are used, similarly for 12 UTC
+# train_length = length of rolling training period (in days)
+## output: vector of coefficients a,b,c,d to be used at vdate
 postproc_global <- function(vdate, train_length){
   # determine training set
   vhour <- format(vdate, "%H")
@@ -63,7 +79,10 @@ postproc_global <- function(vdate, train_length){
   if(startdate < dates[1]){
     stop("start date of training period before first available date, choose shorter train_length")
   }
-
+  
+  # generate index vector for training set, indicating those forecast cases which
+  #   - have to same valid hour as vdate (00/12 UTC)
+  #   - are in the training periof between startdate and enddate
   ind_training <- which(dates_validhour == vhour & dates >= startdate & dates <= enddate)
   
   # extract forecast data
@@ -71,7 +90,7 @@ postproc_global <- function(vdate, train_length){
   ensfc_train_mean <- c(apply(ensfc_train, c(1,3), mean))
   ensfc_train_var <- c(apply(ensfc_train, c(1,3), var))
   
-  # extract observation data
+  # extract corresponding observation data
   obs_train <- c(obsdata[,ind_training])
   
   # find and omit NA values in observations (there are no NAs in forecasts)
@@ -82,13 +101,14 @@ postproc_global <- function(vdate, train_length){
     ensfc_train_var <- ensfc_train_var[ind_notNA]
   }
   
-  # determine EMOS parameters using minimum CRPS estimation
+  # determine optimal EMOS coefficients a,b,c,d using minimum CRPS estimation
   optim_out <- optim(par = c(1,1,1,1), fn = objective_fun,
                      gr = gradfun_wrapper,
                      ensmean = ensfc_train_mean, ensvar = ensfc_train_var, 
                      obs = obs_train,
                      method = "BFGS")
   
+  # check convergence of the numerical optimization
   if(optim_out$convergence != 0){
     message("numerical optimization did not converge")
   }
@@ -129,31 +149,44 @@ postproc_global <- function(vdate, train_length){
 # hist(crps_ens - crps_n)
 
 ## example for 2008-2016, takes ~ 45 minutes on my laptop
+# training length: 25 days
 m <- 25
+# dates for which EMOS models should be fit (here: only for 00 UTC valid times; all dates in 2008-2016)
 dates_fit <- seq(as.POSIXct("2008-01-01 00:00", tz = "UTC", origin = "1970-01-01 00:00"), 
                  as.POSIXct("2016-12-31 00:00", tz = "UTC", origin = "1970-01-01 00:00"), 
                  by="+1 day")
+# objects to save mean CRPS values to
 crpsout_n <- numeric(length(dates_fit))
 crpsout_ens <- numeric(length(dates_fit))
 
 for(dd in 1:length(dates_fit)){
+  # choose current date
   day <- dates_fit[dd]
+  # progress indicator
   if(format(dates_fit[dd], "%d") == "01"){
     format(dates_fit[dd], "%B %Y")
     cat("Starting at", paste(Sys.time()), ":", format(dates_fit[dd], "%B %Y"), "\n"); flush(stdout())
   }
+  # apply EMOS function to obtain optimal parameters
   par_out <- postproc_global(vdate = day, train_length = m)
   
+  # extract ensemble forecasts and summary statistics for the day of interest ("day")
   ind_today <- which(dates == day)
   ensfc_today <- fcdata[,,ind_today]
   ensfc_today_mean <- apply(ensfc_today, c(1), mean)
   ensfc_today_var <- apply(ensfc_today, c(1), var)
   
+  # use summary statistics and EMOS coefficients to determine mu and sigma
+  # (= location and scale)
+  # note that the link functions are the same as employed in the objective function
   loc <- c(cbind(1, ensfc_today_mean) %*% par_out[1:2])
   sc <- sqrt(c(cbind(1, ensfc_today_var) %*% par_out[3:4]))
   
+  # to evaluate forecasts, find corresponding observations
   obs_today <- obsdata[,ind_today]
   
+  # loc, sc and obs_today are vectors, with values for all stations at date "day" 
+  # there are some NA values in observations: omit those forecast cases 
   if(anyNA(obs_today)){
     ind_notNA_today <- which(!is.na(obs_today))
     obs_today <- obs_today[ind_notNA_today]
@@ -162,6 +195,7 @@ for(dd in 1:length(dates_fit)){
     ensfc_today <- ensfc_today[ind_notNA_today,]
   }
   
+  # compute the mean CRPS
   crpsout_n[dd] <- mean(crps_norm(obs_today, loc, sc))
   crpsout_ens[dd] <- mean(crps_sample(obs_today, ensfc_today))
 }
@@ -176,6 +210,8 @@ summary(crpsout_ens)
 produce_pdfs <- FALSE
 pdf_folder <- "/home/sebastian/Projects/PP_NN/code/standard_postprocessing/preliminary_results/"
 
+
+## plot 1: time series of daily mean CRPS differences
 if(produce_pdfs){
   pdf(paste0(pdf_folder, "crpsdiff_emos_global.pdf"), width = 6, height = 5, pointsize = 12)
 }
@@ -241,6 +277,9 @@ movingAverage_ignoreNA <- function(x, n = 1) {
   # return sum divided by count
   s/count
 }
+
+
+# plot 2: rolling 50-day mean (mean) CRPS values and differences (smoothed version of plot 1)
 k <- 50
 if(produce_pdfs){
   pdf(paste0(pdf_folder, "crps_rollingmean_emos_global.pdf"), width = 12, height = 5, pointsize = 12)
@@ -258,6 +297,7 @@ if(produce_pdfs){
   dev.off()
 }
 
+# plot 3: separate forecast cases by month and average over all years
 months_fit <- format(dates_fit, "%m")
 crpsout_ens_monthly <- NULL
 crpsout_n_monthly <- NULL
