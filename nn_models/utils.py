@@ -1,5 +1,7 @@
 """
-Utility functions for PPNN
+Utility functions for PPNN.
+The functions are still a little confusingly named and 
+structured at the moment.
 
 Author: Stephan Rasp
 """
@@ -36,6 +38,37 @@ def load_nc_data(fn, utc=0):
     dates = dates[hours == 0]
 
     return tobs, tfc, dates
+
+
+def get_train_test_data(tobs_full, tfc_full, date_idx, window_size=25, fclt=48):
+    """
+    Returnes the prepared and normalized training and test data.
+    Training data: tobs and tfc for the rolling window
+    Test data: tobs and tfc for the to be predicted date.
+    """
+    # Get the data from the full data set
+    tobs_train, tfc_train = get_rolling_slice(tobs_full, tfc_full, date_idx, 
+                                            window_size, fclt)
+    tobs_test, tfc_test = (tobs_full[date_idx], tfc_full[date_idx])
+
+    # Compress the data and remove nans
+    tobs_train, tfc_mean_train, tfc_std_train = prep_data(tobs_train, tfc_train)
+    tobs_test, tfc_mean_test, tfc_std_test = prep_data(tobs_test, tfc_test)
+
+    # Scale the input features
+    tfc_mean_mean = tfc_mean_train.mean()
+    tfc_mean_std = tfc_mean_train.std()
+    tfc_std_mean = tfc_std_train.mean()
+    tfc_std_std = tfc_std_train.std()
+
+    tfc_mean_train = (tfc_mean_train - tfc_mean_mean) / tfc_mean_std
+    tfc_mean_test = (tfc_mean_test - tfc_mean_mean) / tfc_mean_std
+    tfc_std_train = (tfc_std_train - tfc_std_mean) / tfc_std_std
+    tfc_std_test = (tfc_std_test - tfc_std_mean) / tfc_std_std
+
+    return (tfc_mean_train, tfc_std_train, tobs_train, 
+            tfc_mean_test, tfc_std_test, tobs_test)
+
 
 
 def get_rolling_slice(tobs_full, tfc_full, date_idx, window_size=25, fclt=48):
