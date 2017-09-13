@@ -6,7 +6,7 @@ data_dir <- "/media/sebastian/Elements/Postproc_NN/data/"
 
 library(RSQLite)
 if (file.exists(paste0(data_dir, "observations/station_data"))) {
-  db <- dbConnect(SQLite(), 'station_data')
+  db <- dbConnect(SQLite(), paste0(data_dir, "observations/station_data"))
 }
 
 st_temp <- dbGetQuery(db, 'SELECT * FROM temp') # get whole table 'temp'
