@@ -207,7 +207,7 @@ for(filename in other_files){
 stationdim <- ncdim_def("station", "station_ID", as.integer(stationlist))
 memberdim <- ncdim_def("member", "member_number", as.integer(1:50))
 timedim <- ncdim_def(name = "time", vals = as.integer(fc_raw_validtime),
-                     units = "hours since 1970-01-01 00:00 UTC",
+                     units = "seconds since 1970-01-01 00:00 UTC",
                      longname = "valid time of forecasts and observations, UTC")
 # as.POSIXct(as.integer(fc_raw_validtime), tz = "UTC", origin = "1970-01-01 00:00")
 
