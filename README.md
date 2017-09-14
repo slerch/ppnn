@@ -9,7 +9,7 @@
 https://software.ecmwf.int/wiki/display/TIGGE/Models
 
 - Variables: T2M
-- Time period: 2007-2017 (have to check exact dates)
+- Time period: 2007-01-02 -- 2017-01-02 (forecasts for forecast initializations between 2007-01-01 and 2016-12-31)
 - Forecast initialization time: 00UTC
 - Members: 50
 - Forecast lead time: 36h and 48h (valid at 12 and 00UTC)
@@ -21,19 +21,19 @@ https://software.ecmwf.int/wiki/display/TIGGE/Models
 **DWD SYNOP stations**
 
 - Number of stations: 537
-- Variables: T2M (and altitude for each station)
+- Variables: T2M (longitude, latitude and altitude for each station)
 - There is missing observation data!
 
 ## Post-processing
 
 ### Standard EMOS
 
-Using a rolling training period of the previous 25 days.
+Using a rolling training period of the previous 25 (global model) / 360 (local model) days.
 
 | Method | Description |
 | ------ | ----------- |
 | Global | Use all stations to train one model |
-| Local  | To Do       |
+| Local  | Only use data from station of interest |
 
 The results are in the directory: `standard_postprocessing/preliminary_results`
 
