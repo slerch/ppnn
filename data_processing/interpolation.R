@@ -74,6 +74,18 @@ for(thisst in stationlist){
     cat("station", thisst_pos, "of", length(stationlist), "starting at", paste(Sys.time()),"\n"); flush(stdout())
   }
   
+  # station positions
+  thisst_lat <- st_meta$LATITUDE[which(st_meta$STATIONS_ID == thisst)]
+  thisst_lon <- st_meta$LONGITUDE[which(st_meta$STATIONS_ID == thisst)]
+  
+  # find latitude and longitude of surrounding grib boxes
+  lat_low <- max(fc_raw_lat[which(fc_raw_lat <= thisst_lat)])
+  lat_high <- lat_low + 0.5
+  lon_low <- max(fc_raw_lon[which(fc_raw_lon <= thisst_lon)])
+  lon_high <- lon_low + 0.5
+  x_coord <- c(lon_low, lon_high)
+  y_coord <- c(lat_low, lat_high)
+  
   for(vtime in fc_raw_validtime){
     vtime_pos <- which(fc_raw_validtime == vtime)
     
@@ -86,16 +98,6 @@ for(thisst in stationlist){
     }
     
     for(mem in 1:50){
-      thisst_lat <- st_meta$LATITUDE[which(st_meta$STATIONS_ID == thisst)]
-      thisst_lon <- st_meta$LONGITUDE[which(st_meta$STATIONS_ID == thisst)]
-      
-      # find latitude and longitude of surrounding grib boxes
-      lat_low <- max(fc_raw_lat[which(fc_raw_lat <= thisst_lat)])
-      lat_high <- lat_low + 0.5
-      lon_low <- max(fc_raw_lon[which(fc_raw_lon <= thisst_lon)])
-      lon_high <- lon_low + 0.5
-      x_coord <- c(lon_low, lon_high)
-      y_coord <- c(lat_low, lat_high)
       
       # find corresponding positions in nc dimensions
       lat_pos <- c(which(fc_raw_lat == lat_low),which(fc_raw_lat == lat_high))

@@ -25,8 +25,8 @@ from ecmwfapi import ECMWFDataServer
 server = ECMWFDataServer()
     
 def retrieve_tigge_data():
-    date1 = [str(i) + "-01-01" for i in xrange(2007,2017)] 
-    date2 = [str(i) + "-12-31" for i in xrange(2007,2017)]   
+    date1 = [str(i) + "-01-01" for i in xrange(2016,2017)] 
+    date2 = [str(i) + "-12-31" for i in xrange(2016,2017)]   
     dates = date1
     for j in range(0,10):
         dates[j] = date1[j] + "/to/" + date2[j]
