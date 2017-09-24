@@ -39,14 +39,15 @@ class EMOS_Network(object):
         # we can set up the network.
         mu = a + meanx * b
         sigma = c + stdx * d
+        out = T.stack([mu, sigma], axis=1)
 
-        mean_crps = crps_cost_function(mu, sigma, target)
+        mean_crps = crps_cost_function(target, out)
 
         # Now compute the gradients of the cost function 
         # with respect to the four weights/parameters
         params = [a, b, c, d]   # Let's put them in a list for convenience
         gradients = theano.tensor.grad(
-            crps_cost_function(mu, sigma, target), 
+            crps_cost_function(target, out), 
             params,
             )
         
@@ -112,19 +113,23 @@ class EMOS_Network(object):
 
 
 
-def crps_cost_function(mu, sigma, target):
+def crps_cost_function(target, pred):
     """Computes the mean CRPS loss function.
     
     Code inspired by Kai Polsterer (HITS)
     Inputs
     ------
-        mu : Theano tensor containing means
-        sigma : Theano tensor containing standard deviations
+        pred = [mu, sigma] : Theano tensors containing means and stds as np array
         target: Theano tensor containing target
     Outputs
     -------
         mean_crps : Scalar with mean CRPS over all samples
     """
+    # Split input
+    mu = pred[:, 0]
+    sigma = pred[:, 1]
+    target = target[:, 0]   # Need to also get rid of axis 1 to match!
+
     # To stop sigma from becoming negative we first have to 
     # convert it the the variance and then take the square
     # root again. 

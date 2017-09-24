@@ -2,3 +2,6 @@
 .ipynb_checkpoints/
 .DS_Store
 data/
+nn_postprocessing/__pycache__
+*.pyc
+
