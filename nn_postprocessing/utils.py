@@ -11,6 +11,7 @@ import numpy as np
 from netCDF4 import num2date, Dataset
 from emos_network_theano import EMOS_Network
 import timeit
+from keras.callbacks import EarlyStopping
 
 
 def load_nc_data(fn, utc=0):
@@ -154,13 +155,15 @@ def crps_normal(mu, sigma, y):
     return crps
 
 
-def loop_over_days(tobs_full, tfc_full, date_idx_start, date_idx_stop, 
+def loop_over_days(model, tobs_full, tfc_full, date_idx_start, date_idx_stop, 
                    window_size, fclt, epochs_max, early_stopping_delta=None,
-                   lr=0.1, reinit_model=False, verbose=0):
+                   lr=0.1, reinit_model=False, verbose=0, model_type='keras'):
     """Function to loop over days with Theano EMOS_Network model.
 
     Parameters
     ----------
+    model : model
+        Model with fit method, either keras or theano
     tobs_full : numpy array [time, station]
         Output of load_nc_data
     tfc_full : numpy array [time, member, station]
@@ -182,6 +185,8 @@ def loop_over_days(tobs_full, tfc_full, date_idx_start, date_idx_stop,
         If False, model weights are kept and just updated
     verbose : int
         0 or 1. If 1, print additional output
+    model_type : str
+        'keras' or 'theano'
     Returns
     -------
     train_crps_list : list
@@ -193,9 +198,6 @@ def loop_over_days(tobs_full, tfc_full, date_idx_start, date_idx_stop,
     # Make sure learning rate is 32 bit float
     lr = np.asarray(lr, dtype='float32')
 
-    # Set up model initially
-    model = EMOS_Network()
-
     # Allocate lists to write results
     train_crps_list = []
     valid_crps_list = []
@@ -203,7 +205,7 @@ def loop_over_days(tobs_full, tfc_full, date_idx_start, date_idx_stop,
     # Start timer and loop 
     time_start = timeit.default_timer()
     for date_idx in range(date_idx_start, date_idx_stop + 1):
-        if date_idx % 20 == 0:
+        if date_idx % 100 == 0:
             print(date_idx)
 
         # Get data slice
@@ -213,17 +215,38 @@ def loop_over_days(tobs_full, tfc_full, date_idx_start, date_idx_stop,
                                 window_size, fclt)
 
         # Reinitialize model if requested
+        # only works for theano model
         if reinit_model:
+            assert model_type == 'thano', 'Reinitialize does not work with keras'
             model = EMOS_Network()
 
         # Fit model
-        train_crps, valid_crps = model.fit(
-            tfc_mean_train, tfc_std_train, tobs_train, 
-            epochs_max, 
-            (tfc_mean_test, tfc_std_test, tobs_test), 
-            lr=lr, 
-            early_stopping_delta=early_stopping_delta
-            )
+        if model_type == 'theano':
+            train_crps, valid_crps = model.fit(
+                tfc_mean_train, tfc_std_train, tobs_train, 
+                epochs_max, 
+                (tfc_mean_test, tfc_std_test, tobs_test), 
+                lr=lr, 
+                early_stopping_delta=early_stopping_delta,
+                verbose=verbose,
+                )
+        elif model_type == 'keras':
+            es = EarlyStopping(monitor='loss', min_delta=early_stopping_delta, 
+                               patience=2)
+            batch_size=tfc_mean_train.shape[0]
+            model.fit(
+                [tfc_mean_train, tfc_std_train], tobs_train,
+                epochs=epochs_max,
+                batch_size=batch_size,
+                verbose=verbose,
+                callbacks=[es],
+                )
+            train_crps = model.evaluate([tfc_mean_train, tfc_std_train], 
+                                        tobs_train, verbose=0)
+            valid_crps = model.evaluate([tfc_mean_test, tfc_std_test], 
+                                        tobs_test, verbose=0)
+        else:
+            raise Exception('Wrong model type.')
 
         # Write output
         train_crps_list.append(train_crps)
