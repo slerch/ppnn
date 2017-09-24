@@ -9,6 +9,8 @@ Author: Stephan Rasp
 from scipy.stats import norm
 import numpy as np
 from netCDF4 import num2date, Dataset
+from emos_network_theano import EMOS_Network
+import timeit
 
 
 def load_nc_data(fn, utc=0):
@@ -152,6 +154,86 @@ def crps_normal(mu, sigma, y):
     return crps
 
 
+def loop_over_days(tobs_full, tfc_full, date_idx_start, date_idx_stop, 
+                   window_size, fclt, epochs_max, early_stopping_delta=None,
+                   lr=0.1, reinit_model=False, verbose=0):
+    """Function to loop over days with Theano EMOS_Network model.
+
+    Parameters
+    ----------
+    tobs_full : numpy array [time, station]
+        Output of load_nc_data
+    tfc_full : numpy array [time, member, station]
+        Output of load_nc_data
+    date_idx_start/stop : int
+        Start and stop index for loop
+    window_size : int
+        How many days for rolling training period
+    fclt : int
+        Forecast lead time in hours
+    epochs_max : int
+        How many times to fit to the entire training set
+    early_stopping_delta : float
+        Minimum improvement in mean train CRPS to keep going
+    lr : float
+        Learning rate
+    reinit_model : bool
+        If True, model weights are reinitialized for each day.
+        If False, model weights are kept and just updated
+    verbose : int
+        0 or 1. If 1, print additional output
+    Returns
+    -------
+    train_crps_list : list
+        List with training CRPS for each day
+    valid_crps_list : list
+        List with validation/prediction CRPS for each day
+    """
+
+    # Make sure learning rate is 32 bit float
+    lr = np.asarray(lr, dtype='float32')
+
+    # Set up model initially
+    model = EMOS_Network()
+
+    # Allocate lists to write results
+    train_crps_list = []
+    valid_crps_list = []
+
+    # Start timer and loop 
+    time_start = timeit.default_timer()
+    for date_idx in range(date_idx_start, date_idx_stop + 1):
+        if date_idx % 20 == 0:
+            print(date_idx)
+
+        # Get data slice
+        tfc_mean_train, tfc_std_train, tobs_train, \
+            tfc_mean_test, tfc_std_test, tobs_test = \
+            get_train_test_data(tobs_full, tfc_full, date_idx, 
+                                window_size, fclt)
+
+        # Reinitialize model if requested
+        if reinit_model:
+            model = EMOS_Network()
+
+        # Fit model
+        train_crps, valid_crps = model.fit(
+            tfc_mean_train, tfc_std_train, tobs_train, 
+            epochs_max, 
+            (tfc_mean_test, tfc_std_test, tobs_test), 
+            lr=lr, 
+            early_stopping_delta=early_stopping_delta
+            )
+
+        # Write output
+        train_crps_list.append(train_crps)
+        valid_crps_list.append(valid_crps)
+
+    # Stop timer 
+    time_stop = timeit.default_timer()
+    print('Time: %.2f s' % (time_stop - time_start))
+
+    return train_crps_list, valid_crps_list
 
 
 
