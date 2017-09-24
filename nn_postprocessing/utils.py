@@ -221,7 +221,7 @@ def loop_over_days(model, tobs_full, tfc_full, date_idx_start, date_idx_stop,
             model = EMOS_Network()
 
         # Fit model
-        if model_type == 'theano':
+        if model_type == 'EMOS_Network_theano':
             train_crps, valid_crps = model.fit(
                 tfc_mean_train, tfc_std_train, tobs_train, 
                 epochs_max, 
@@ -230,7 +230,7 @@ def loop_over_days(model, tobs_full, tfc_full, date_idx_start, date_idx_stop,
                 early_stopping_delta=early_stopping_delta,
                 verbose=verbose,
                 )
-        elif model_type == 'keras':
+        elif model_type == 'EMOS_Network_keras':
             es = EarlyStopping(monitor='loss', min_delta=early_stopping_delta, 
                                patience=2)
             batch_size=tfc_mean_train.shape[0]
@@ -242,11 +242,27 @@ def loop_over_days(model, tobs_full, tfc_full, date_idx_start, date_idx_stop,
                 callbacks=[es],
                 )
             train_crps = model.evaluate([tfc_mean_train, tfc_std_train], 
-                                        tobs_train, verbose=0)
+                                        tobs_train, verbose=0)[0]
             valid_crps = model.evaluate([tfc_mean_test, tfc_std_test], 
-                                        tobs_test, verbose=0)
+                                        tobs_test, verbose=0)[0]
+            if verbose == 1:
+                print(train_crps, valid_crps)
         else:
-            raise Exception('Wrong model type.')
+            # For the more general network combine the inputs
+            in_train = np.column_stack([tfc_mean_train, tfc_std_train])
+            in_test = np.column_stack([tfc_mean_test, tfc_std_test])
+            es = EarlyStopping(monitor='loss', min_delta=early_stopping_delta, 
+                               patience=2)
+            batch_size=in_train.shape[0]
+            model.fit(
+                in_train, tobs_train,
+                epochs=epochs_max,
+                batch_size=batch_size,
+                verbose=verbose,
+                callbacks=[es],
+                )
+            train_crps = model.evaluate(in_train, tobs_train, verbose=0)[0]
+            valid_crps = model.evaluate(in_test, tobs_test, verbose=0)[0]
 
         # Write output
         train_crps_list.append(train_crps)
