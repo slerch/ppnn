@@ -167,7 +167,6 @@ for(filename in other_files){
 
 ## ------------------------------------------ ##
 
-
 ## write to netCDF file
 
 # define dimensions
