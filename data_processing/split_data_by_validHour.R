@@ -1,4 +1,19 @@
 rm(list=ls())
+data_dir <- "/media/sebastian/Elements/Postproc_NN/data/"
+
+library(RSQLite)
+if (file.exists(paste0(data_dir, "observations/station_data"))) {
+  db <- dbConnect(SQLite(), paste0(data_dir, "observations/station_data"))
+}
+
+st_temp <- dbGetQuery(db, 'SELECT * FROM temp') # get whole table 'temp'
+str(st_temp)
+
+st_meta <- dbGetQuery(db, 'SELECT * FROM meta') # get whole table 'meta'
+str(st_meta)
+
+dbDisconnect(db)
+
 library(ncdf4)
 
 data_dir <- "/media/sebastian/Elements/Postproc_NN/data/"
@@ -18,6 +33,8 @@ station_loc <- ncvar_get(nc, "station_loc")
 
 time <- ncvar_get(nc, "time")
 station <- ncvar_get(nc, "station")
+
+nc_close(nc)
 
 validtime <- as.POSIXct(time, tz = "UTC", origin = "1970-01-01 00:00")
 validtime_hour <- format(validtime, "%H")
