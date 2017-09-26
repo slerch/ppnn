@@ -43,7 +43,8 @@ def load_nc_data(fn, utc=0):
     return tobs, tfc, dates
 
 
-def get_train_test_data(tobs_full, tfc_full, date_idx, window_size=25, fclt=48):
+def get_train_test_data(tobs_full, tfc_full, date_idx, window_size=25, fclt=48,
+                        subtract_std_mean=True):
     """
     Returnes the prepared and normalized training and test data.
     Training data: tobs and tfc for the rolling window
@@ -66,8 +67,12 @@ def get_train_test_data(tobs_full, tfc_full, date_idx, window_size=25, fclt=48):
 
     tfc_mean_train = (tfc_mean_train - tfc_mean_mean) / tfc_mean_std
     tfc_mean_test = (tfc_mean_test - tfc_mean_mean) / tfc_mean_std
-    tfc_std_train = (tfc_std_train - tfc_std_mean) / tfc_std_std
-    tfc_std_test = (tfc_std_test - tfc_std_mean) / tfc_std_std
+    if subtract_std_mean:
+        tfc_std_train = (tfc_std_train - tfc_std_mean) / tfc_std_std
+        tfc_std_test = (tfc_std_test - tfc_std_mean) / tfc_std_std
+    else:
+        tfc_std_train = tfc_std_train / tfc_std_std
+        tfc_std_test = tfc_std_test / tfc_std_std
 
     return (tfc_mean_train, tfc_std_train, tobs_train, 
             tfc_mean_test, tfc_std_test, tobs_test)
