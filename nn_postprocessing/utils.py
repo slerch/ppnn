@@ -28,10 +28,6 @@ def load_nc_data(fn, utc=0):
     dates = num2date(rg.variables['time'][:],
                      units='seconds since 1970-01-01 00:00 UTC')
 
-    # For now, convert data to C
-    idx = np.where(np.mean(tfc, axis=(1, 2)) > 100)[0][0]
-    tfc[idx:] = tfc[idx:] - 273.15
-
     # Compute hours
     hours = np.array([d.hour for d in list(dates)])
 
@@ -44,7 +40,7 @@ def load_nc_data(fn, utc=0):
 
 
 def get_train_test_data(tobs_full, tfc_full, date_idx, window_size=25, fclt=48,
-                        subtract_std_mean=True):
+                        subtract_std_mean=True, test_plus=1):
     """
     Returnes the prepared and normalized training and test data.
     Training data: tobs and tfc for the rolling window
@@ -53,7 +49,8 @@ def get_train_test_data(tobs_full, tfc_full, date_idx, window_size=25, fclt=48,
     # Get the data from the full data set
     tobs_train, tfc_train = get_rolling_slice(tobs_full, tfc_full, date_idx, 
                                             window_size, fclt)
-    tobs_test, tfc_test = (tobs_full[date_idx], tfc_full[date_idx])
+    tobs_test, tfc_test = (tobs_full[date_idx:date_idx + test_plus], 
+                           tfc_full[date_idx:date_idx + test_plus])
 
     # Compress the data and remove nans
     tobs_train, tfc_mean_train, tfc_std_train = prep_data(tobs_train, tfc_train)
@@ -217,7 +214,7 @@ def loop_over_days(model, tobs_full, tfc_full, date_idx_start, date_idx_stop,
         tfc_mean_train, tfc_std_train, tobs_train, \
             tfc_mean_test, tfc_std_test, tobs_test = \
             get_train_test_data(tobs_full, tfc_full, date_idx, 
-                                window_size, fclt)
+                                window_size, fclt, subtract_std_mean=False)
 
         # Reinitialize model if requested
         # only works for theano model
