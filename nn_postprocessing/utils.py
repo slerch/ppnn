@@ -9,9 +9,10 @@ Author: Stephan Rasp
 from scipy.stats import norm
 import numpy as np
 from netCDF4 import num2date, Dataset
-from emos_network_theano import EMOS_Network
+from EMOS_network_theano import EMOS_Network
 import timeit
 from keras.callbacks import EarlyStopping
+from datetime import datetime
 
 
 def load_nc_data(fn, utc=0):
@@ -32,9 +33,9 @@ def load_nc_data(fn, utc=0):
     hours = np.array([d.hour for d in list(dates)])
 
     # Get data for given valid time
-    tobs = tobs[hours == 0]
-    tfc = tfc[hours == 0]
-    dates = dates[hours == 0]
+    tobs = tobs[hours == utc]
+    tfc = tfc[hours == utc]
+    dates = dates[hours == utc]
 
     return tobs, tfc, dates
 
@@ -96,31 +97,6 @@ def get_rolling_slice(tobs_full, tfc_full, date_idx, window_size=25, fclt=48):
     return tobs_roll, tfc_roll
 
 
-def get_data_slice(rg, month, utc=0):
-    """
-    Get data for one month.
-
-    Not currently used!
-    """
-    # Get array of datetime objects
-    dates = num2date(rg.variables['time'][:], 
-                     units='seconds since 1970-01-01 00:00 UTC')
-    # Extract months and hours
-    months = np.array([d.month for d in list(dates)])
-    hours = np.array([d.hour for d in list(dates)])
-    
-    # for now I need to include the Kelvin fix
-    tfc = rg.variables['t2m_fc'][:]
-    idx = np.where(np.mean(tfc, axis=(1, 2)) > 100)[0][0]
-    tfc[idx:] = tfc[idx:] - 273.15
-    
-    # Extract the requested data
-    tobs = rg.variables['t2m_obs'][(months == month) & (hours == utc)]
-    tfc = tfc[(months == month) & (hours == utc)]
-    
-    return tobs, tfc
-
-
 def prep_data(tobs, tfc, verbose=False):
     """
     Prepare the data as input for Network.
@@ -145,6 +121,9 @@ def prep_data(tobs, tfc, verbose=False):
     tfc_std = tfc_std[mask]
     
     return tobs, tfc_mean, tfc_std
+
+def return_date_idx(dates, year, month, day):
+    return np.where(dates == datetime(year, month, day, 0, 0))[0][0]
 
 
 def crps_normal(mu, sigma, y):
