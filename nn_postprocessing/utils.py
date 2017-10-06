@@ -9,7 +9,7 @@ Author: Stephan Rasp
 from scipy.stats import norm
 import numpy as np
 from netCDF4 import num2date, Dataset
-from EMOS_network_theano import EMOS_Network
+from emos_network_theano import EMOS_Network
 import timeit
 from keras.callbacks import EarlyStopping
 from datetime import datetime
