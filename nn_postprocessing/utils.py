@@ -12,6 +12,8 @@ from netCDF4 import num2date, Dataset
 from emos_network_theano import EMOS_Network
 import timeit
 from keras.callbacks import EarlyStopping
+from datetime import datetime
+import pdb
 
 
 def load_nc_data(fn, utc=0):
@@ -28,22 +30,19 @@ def load_nc_data(fn, utc=0):
     dates = num2date(rg.variables['time'][:],
                      units='seconds since 1970-01-01 00:00 UTC')
 
-    # For now, convert data to C
-    idx = np.where(np.mean(tfc, axis=(1, 2)) > 100)[0][0]
-    tfc[idx:] = tfc[idx:] - 273.15
-
     # Compute hours
     hours = np.array([d.hour for d in list(dates)])
 
     # Get data for given valid time
-    tobs = tobs[hours == 0]
-    tfc = tfc[hours == 0]
-    dates = dates[hours == 0]
+    tobs = tobs[hours == utc]
+    tfc = tfc[hours == utc]
+    dates = dates[hours == utc]
 
     return tobs, tfc, dates
 
 
-def get_train_test_data(tobs_full, tfc_full, date_idx, window_size=25, fclt=48):
+def get_train_test_data(tobs_full, tfc_full, date_idx, window_size=25, fclt=48,
+                        subtract_std_mean=True, test_plus=1):
     """
     Returnes the prepared and normalized training and test data.
     Training data: tobs and tfc for the rolling window
@@ -52,7 +51,8 @@ def get_train_test_data(tobs_full, tfc_full, date_idx, window_size=25, fclt=48):
     # Get the data from the full data set
     tobs_train, tfc_train = get_rolling_slice(tobs_full, tfc_full, date_idx, 
                                             window_size, fclt)
-    tobs_test, tfc_test = (tobs_full[date_idx], tfc_full[date_idx])
+    tobs_test, tfc_test = (tobs_full[date_idx:date_idx + test_plus], 
+                           tfc_full[date_idx:date_idx + test_plus])
 
     # Compress the data and remove nans
     tobs_train, tfc_mean_train, tfc_std_train = prep_data(tobs_train, tfc_train)
@@ -66,8 +66,12 @@ def get_train_test_data(tobs_full, tfc_full, date_idx, window_size=25, fclt=48):
 
     tfc_mean_train = (tfc_mean_train - tfc_mean_mean) / tfc_mean_std
     tfc_mean_test = (tfc_mean_test - tfc_mean_mean) / tfc_mean_std
-    tfc_std_train = (tfc_std_train - tfc_std_mean) / tfc_std_std
-    tfc_std_test = (tfc_std_test - tfc_std_mean) / tfc_std_std
+    if subtract_std_mean:
+        tfc_std_train = (tfc_std_train - tfc_std_mean) / tfc_std_std
+        tfc_std_test = (tfc_std_test - tfc_std_mean) / tfc_std_std
+    else:
+        tfc_std_train = tfc_std_train / tfc_std_std
+        tfc_std_test = tfc_std_test / tfc_std_std
 
     return (tfc_mean_train, tfc_std_train, tobs_train, 
             tfc_mean_test, tfc_std_test, tobs_test)
@@ -94,31 +98,6 @@ def get_rolling_slice(tobs_full, tfc_full, date_idx, window_size=25, fclt=48):
     return tobs_roll, tfc_roll
 
 
-def get_data_slice(rg, month, utc=0):
-    """
-    Get data for one month.
-
-    Not currently used!
-    """
-    # Get array of datetime objects
-    dates = num2date(rg.variables['time'][:], 
-                     units='seconds since 1970-01-01 00:00 UTC')
-    # Extract months and hours
-    months = np.array([d.month for d in list(dates)])
-    hours = np.array([d.hour for d in list(dates)])
-    
-    # for now I need to include the Kelvin fix
-    tfc = rg.variables['t2m_fc'][:]
-    idx = np.where(np.mean(tfc, axis=(1, 2)) > 100)[0][0]
-    tfc[idx:] = tfc[idx:] - 273.15
-    
-    # Extract the requested data
-    tobs = rg.variables['t2m_obs'][(months == month) & (hours == utc)]
-    tfc = tfc[(months == month) & (hours == utc)]
-    
-    return tobs, tfc
-
-
 def prep_data(tobs, tfc, verbose=False):
     """
     Prepare the data as input for Network.
@@ -143,6 +122,9 @@ def prep_data(tobs, tfc, verbose=False):
     tfc_std = tfc_std[mask]
     
     return tobs, tfc_mean, tfc_std
+
+def return_date_idx(dates, year, month, day):
+    return np.where(dates == datetime(year, month, day, 0, 0))[0][0]
 
 
 def crps_normal(mu, sigma, y):
@@ -212,7 +194,7 @@ def loop_over_days(model, tobs_full, tfc_full, date_idx_start, date_idx_stop,
         tfc_mean_train, tfc_std_train, tobs_train, \
             tfc_mean_test, tfc_std_test, tobs_test = \
             get_train_test_data(tobs_full, tfc_full, date_idx, 
-                                window_size, fclt)
+                                window_size, fclt, subtract_std_mean=False)
 
         # Reinitialize model if requested
         # only works for theano model
@@ -275,5 +257,78 @@ def loop_over_days(model, tobs_full, tfc_full, date_idx_start, date_idx_stop,
     return train_crps_list, valid_crps_list
 
 
+def prepare_data(data_dir, aux_dict=None):
+    """
+    ToDo: Documentation!
+    """
+    aux_dir = data_dir + 'auxiliary/interpolated_to_stations/'
+    
+    fl = []   # Here we will store all the features
+    # Load Temperature data
+    rg = Dataset(data_dir + 'data_interpolated_00UTC.nc')
+    target = rg.variables['t2m_obs'][:]
+    ntime = target.shape[0]
+    dates = num2date(rg.variables['time'][:],
+                     units='seconds since 1970-01-01 00:00 UTC')
+    fl.append(np.mean(rg.variables['t2m_fc'][:], axis=1))
+    fl.append(np.std(rg.variables['t2m_fc'][:], axis=1, ddof=1))
+    rg.close()
+    
+    if aux_dict is not None:
+        for aux_fn, var_list in aux_dict.items():
+            rg = Dataset(aux_dir + aux_fn)
+            for var in var_list:
+                data = rg.variables[var][:]
+                if 'geo' in aux_fn:   # Should probably look at dimensions
+                    fl.append(np.array([data] * ntime))
+                else:
+                    fl.append(np.mean(data, axis=1))
+                    fl.append(np.std(data, axis=1, ddof=1))
+            rg.close()
+    
+    return target, np.array(fl), dates
 
+def scale_and_split(target, features, date_idx, period, return_id_array=False): 
+    """
+    ToDo: Documentation
+    """
 
+    features_train = features[:, date_idx-period:date_idx]
+    target_train = target[date_idx-period:date_idx]
+    features_test = features[:, date_idx:date_idx+period]
+    target_test = target[date_idx:date_idx+period]
+    # Ravel arrays
+    features_train = np.reshape(features_train, (features_train.shape[0], -1))
+    target_train = np.reshape(target_train, (-1))
+    features_test = np.reshape(features_test, (features_train.shape[0], -1))
+    target_test = np.reshape(target_test, (-1))
+    # Remove nans
+    train_mask = np.isfinite(target_train.data)
+    features_train = features_train[:, train_mask]
+    target_train = target_train.data[train_mask]
+    test_mask = np.isfinite(target_test.data)
+    features_test = features_test[:, test_mask]
+    target_test = target_test.data[test_mask]
+    features_train = np.rollaxis(features_train, 1, 0)
+    features_test = np.rollaxis(features_test, 1, 0)
+    # Scale features
+    features_max = np.max(features_train, axis=0)
+    target_max = np.max(target_train)
+    features_train /= features_max
+    features_test /= features_max
+    # target_train /= target_max
+    # target_test /= target_max
+    
+    if return_id_array:
+        s = features.shape
+        id_array = np.array([np.arange(s[-1])] * s[1])
+        id_array_train = id_array[date_idx-period:date_idx]
+        id_array_test = id_array[date_idx:date_idx+period]
+        id_array_train = np.reshape(id_array_train, (-1))
+        id_array_test = np.reshape(id_array_test, (-1))
+        id_array_train = id_array_train[train_mask]
+        id_array_test = id_array_test[test_mask]
+        
+        return features_train, target_train, features_test, target_test, id_array_train, id_array_test
+    else:
+        return features_train, target_train, features_test, target_test
