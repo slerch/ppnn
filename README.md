@@ -30,10 +30,10 @@ https://software.ecmwf.int/wiki/display/TIGGE/Models
 
 Using a rolling training period of the previous 25 (global model) / 360 (local model) days.
 
-| Method | Description |
-| ------ | ----------- |
-| Global | Use all stations to train one model |
-| Local  | Only use data from station of interest |
+| Method | Description | CRPS for 2016 (no guarantee this is correct, needs automation!) |
+| ------ | ----------- | -------------- |
+| Global | Use all stations to train one model | 1.07 |
+| Local  | Only use data from station of interest | 0.96 |
 
 The results are in the directory: `standard_postprocessing/preliminary_results`
 
@@ -46,9 +46,15 @@ The results are in the directory: `standard_postprocessing/preliminary_results`
 	- Add neighborhood information from the ensemble
 
 
-| Method | Description |
-| ------ | ----------- |
-| EMOS analog (In production) | A (not yet neural) network mimicking what EMOS does 
+| Method | Description | CRPS for 2016 |
+| ------ | ----------- | ------------- |
+| EMOS network (global with rolling window as in standard EMOS) | A network mimicking what EMOS does. | 1.00 |
+| EMOS network (train 2015, predict 2016) | 1.01 |
+| Fully connected linear network | 6 parameters | 1.01 |
+| Hidden layer neural net | | 1.02 | 
+| Hidden layer neural net with station embedding | | 0.91 | 
+| Hidden layer neural net with auxiliary data | | 0.94 |
+| Hidden layer neural net with embeddings and aux data | | 0.86 |  
 
 
 
