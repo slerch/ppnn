@@ -257,9 +257,20 @@ def loop_over_days(model, tobs_full, tfc_full, date_idx_start, date_idx_stop,
     return train_crps_list, valid_crps_list
 
 
-def prepare_data(data_dir, aux_dict=None):
-    """
-    ToDo: Documentation!
+def load_data(data_dir, aux_dict=None):
+    """Load data from NetCDF files.
+    
+    Ensemble mean and standard deviations are appended to feature list.
+    Except for geo variables which do not have an ensemble dimension.
+
+    Params:
+        data_dir: base directory where NetCDF files are stored
+        aux_dict: Dictionary with name of auxiliary file and 
+                  list of variables. If None, only temperature.
+    Returns:
+        target: t2m_obs [date, station]
+        feature_list: [feature, date, station]
+        dates: [dates] List of datetime objects
     """
     aux_dir = data_dir + 'auxiliary/interpolated_to_stations/'
     
@@ -269,7 +280,8 @@ def prepare_data(data_dir, aux_dict=None):
     target = rg.variables['t2m_obs'][:]
     ntime = target.shape[0]
     dates = num2date(rg.variables['time'][:],
-                     units='seconds since 1970-01-01 00:00 UTC')
+                     units=rg.variables['time'].units)
+    station_id = rg.variables['station_id'][:]
     fl.append(np.mean(rg.variables['t2m_fc'][:], axis=1))
     fl.append(np.std(rg.variables['t2m_fc'][:], axis=1, ddof=1))
     rg.close()
@@ -279,29 +291,57 @@ def prepare_data(data_dir, aux_dict=None):
             rg = Dataset(aux_dir + aux_fn)
             for var in var_list:
                 data = rg.variables[var][:]
-                if 'geo' in aux_fn:   # Should probably look at dimensions
+                if 'geo' in aux_fn:   
+                    # Should probably look at dimensions
                     fl.append(np.array([data] * ntime))
                 else:
                     fl.append(np.mean(data, axis=1))
                     fl.append(np.std(data, axis=1, ddof=1))
             rg.close()
     
-    return target, np.array(fl), dates
+    return target, np.array(fl), dates, station_id
 
-def scale_and_split(target, features, date_idx, period, return_id_array=False): 
-    """
-    ToDo: Documentation
+
+def split_and_scale(target, features, dates, station_id, train_date_idx_start, 
+                    train_date_idx_stop, test_date_idx_start, 
+                    test_date_idx_stop): 
+    """Splits the dataset into train and test set. Then the features
+    are scaled by dividing by the training set max.
+
+    Params:
+        target: [date, station]
+        features: [feature, date, station]
+        train_date_idx_start: date id where training set starts (inc)
+        train_date_idx_stop: date id where training set stops (excl)
+        test_date_idx_stop: date id where test set starts (inc)
+        test_date_idx_stop: date id where test set stops (excl)
+
+    Returns:
+        features_train: [feature, instance]
+        target_train: [instance]
+        features_test: [feature, instance]
+        target_test: [instance]
+        id_array_train: [instance]  Containing continuous IDs for embedding
+        id_array_test: [instance]
+    
     """
 
-    features_train = features[:, date_idx-period:date_idx]
-    target_train = target[date_idx-period:date_idx]
-    features_test = features[:, date_idx:date_idx+period]
-    target_test = target[date_idx:date_idx+period]
+    # Split data set
+    print('Train set contains %i days' % 
+          (train_date_idx_stop - train_date_idx_start))
+    print('Test set contains %i days' % 
+          (test_date_idx_stop - test_date_idx_start))
+    features_train = features[:, train_date_idx_start:train_date_idx_stop]
+    target_train = target[train_date_idx_start:train_date_idx_stop]
+    features_test = features[:, test_date_idx_stop:test_date_idx_stop]
+    target_test = target[test_date_idx_stop:test_date_idx_stop]
+
     # Ravel arrays
     features_train = np.reshape(features_train, (features_train.shape[0], -1))
     target_train = np.reshape(target_train, (-1))
     features_test = np.reshape(features_test, (features_train.shape[0], -1))
     target_test = np.reshape(target_test, (-1))
+
     # Remove nans
     train_mask = np.isfinite(target_train.data)
     features_train = features_train[:, train_mask]
@@ -309,26 +349,64 @@ def scale_and_split(target, features, date_idx, period, return_id_array=False):
     test_mask = np.isfinite(target_test.data)
     features_test = features_test[:, test_mask]
     target_test = target_test.data[test_mask]
+
+    # Swap axes
     features_train = np.rollaxis(features_train, 1, 0)
     features_test = np.rollaxis(features_test, 1, 0)
+
     # Scale features
     features_max = np.max(features_train, axis=0)
     target_max = np.max(target_train)
     features_train /= features_max
     features_test /= features_max
-    # target_train /= target_max
+    # target_train /= target_max   # No scaling of the outputs!
     # target_test /= target_max
     
-    if return_id_array:
-        s = features.shape
-        id_array = np.array([np.arange(s[-1])] * s[1])
-        id_array_train = id_array[date_idx-period:date_idx]
-        id_array_test = id_array[date_idx:date_idx+period]
-        id_array_train = np.reshape(id_array_train, (-1))
-        id_array_test = np.reshape(id_array_test, (-1))
-        id_array_train = id_array_train[train_mask]
-        id_array_test = id_array_test[test_mask]
-        
-        return features_train, target_train, features_test, target_test, id_array_train, id_array_test
-    else:
-        return features_train, target_train, features_test, target_test
+    # Create continuous id array
+    s = features.shape
+    id_array = np.array([np.arange(s[-1])] * s[1])
+    id_array_train = id_array[train_date_idx_start:train_date_idx_stop]
+    id_array_test = id_array[test_date_idx_stop:test_date_idx_stop]
+    id_array_train = np.reshape(id_array_train, (-1))
+    id_array_test = np.reshape(id_array_test, (-1))
+    id_array_train = id_array_train[train_mask]
+    id_array_test = id_array_test[test_mask]
+
+    # Create actual station id array
+    station_array = np.array([list(station_id)] * s[1])
+    station_array_train = station_array[train_date_idx_start:train_date_idx_stop]
+    station_array_test = station_array[test_date_idx_stop:test_date_idx_stop]
+    station_array_train = np.reshape(station_array_train, (-1))
+    station_array_test = np.reshape(station_array_test, (-1))
+    station_array_train = station_array_train[train_mask]
+    station_array_test = station_array_test[test_mask]
+
+    # Creat date array
+    date_str = [datetime.strftime(dt, '%Y-%m-%d') for dt in list(dates)]
+    date_array = np.array([date_str] * s[2])
+    date_array = np.rollaxis(date_array, 1, 0)
+    date_array_train = date_array[train_date_idx_start:train_date_idx_stop]
+    date_array_test = date_array[test_date_idx_stop:test_date_idx_stop]
+    date_array_train = np.reshape(date_array_train, (-1))
+    date_array_test = np.reshape(date_array_test, (-1))
+    date_array_train = date_array_train[train_mask]
+    date_array_test = date_array_test[test_mask]
+    
+    train_set = Data(target_train, features_train, id_array_train,
+                        station_array_train, date_array_train)
+    test_set = Data(target_test, features_test, id_array_test,
+                        station_array_test, date_array_test)
+    return train_set, test_set
+
+
+class Data(object):
+    """Class for storing data
+    """
+    def __init__(self, target, features, cont_id, station_id, date_strs):
+        self.target = target
+        self.features = features
+        self.cont_id = cont_id
+        self.station_id = station_id
+        self.date_strs = date_strs
+
+
