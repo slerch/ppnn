@@ -16,7 +16,7 @@ import sys
 sys.path.append('/Users/stephanrasp/repositories/enstools')
 from enstools.scores import crps_sample
 import matplotlib.pyplot as plt
-import pdb
+import seaborn as sns
 
 
 # Basic setup
@@ -87,6 +87,18 @@ def crps_normal(mu, sigma, y):
     crps = sigma * (loc * (2 * norm.cdf(loc) - 1) + 
                     2 * norm.pdf(loc) - 1. / np.sqrt(np.pi))
     return crps
+
+
+def plot_results(df):
+    """
+    Plots a summary figure of the scores.
+    """
+    # Create relative improvement column
+    ref = df['crps'][0]
+    df.loc[:, 'improvement in %'] = (ref - df['crps'])  / ref * 100
+    plt.title('Raw ensemble CRPS: %.2f' % ref)
+    sns.barplot(y='name', x='improvement in %', data=df, palette='cubehelix_r')
+    plt.savefig('./results', bbox_inches='tight')
 
 
 # Central routines
@@ -192,9 +204,8 @@ def main(inargs):
     crps_df.to_csv('./crps.csv')
 
     # Plot results
-    crps_df.plot.bar(x='name', y='crps')
-    plt.tight_layout()
-    plt.savefig('./results')
+    plot_results(crps_df)
+
 
 
 if __name__ == '__main__':
