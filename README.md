@@ -49,12 +49,15 @@ The results are in the directory: `standard_postprocessing/preliminary_results`
 | Method | Description | CRPS for 2016 |
 | ------ | ----------- | ------------- |
 | EMOS network (global with rolling window as in standard EMOS) | A network mimicking what EMOS does. | 1.00 |
-| EMOS network (train 2015, predict 2016) | 1.01 |
+| EMOS network (train 2015, predict 2016) | | 1.01 |
 | Fully connected linear network | 6 parameters | 1.01 |
 | Hidden layer neural net | | 1.02 | 
 | Hidden layer neural net with station embedding | | 0.91 | 
 | Hidden layer neural net with auxiliary data | | 0.94 |
 | Hidden layer neural net with embeddings and aux data | | 0.86 |  
 
+## Results
+
+![results](./results/results.png)
 
 

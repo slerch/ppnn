@@ -1,4 +1,7 @@
-"""
+"""Evaluate predictions. Compute CRPS for raw ensemble and PP predictions.
+
+Need to have enstools.scores installed along with the scoringRules R package.
+
 Some functions here are duplicates of functions in utils.py
 This is done on purpose to make sure that the evaluation is correct.
 """
@@ -12,6 +15,7 @@ from scipy.stats import norm
 import sys
 sys.path.append('/Users/stephanrasp/repositories/enstools')
 from enstools.scores import crps_sample
+import matplotlib.pyplot as plt
 import pdb
 
 
@@ -23,6 +27,7 @@ obs_csv = './obs.csv'
 # Auxiliary functions
 def load_obs_data(data_dir):
     """
+    Loads obs [time, station], dates and station_ids
     """
     rg = Dataset(data_dir + 'data_interpolated_00UTC.nc')
     obs = rg.variables['t2m_obs'][:]
@@ -34,19 +39,26 @@ def load_obs_data(data_dir):
 
 def load_raw_ens_data(data_dir):
     """
+    Loads raw ensemble [time, ens, station]
     """
     rg = Dataset(data_dir + 'data_interpolated_00UTC.nc')
     ens = rg.variables['t2m_fc'][:]
-    return ens # time, ens, station
+    return ens
 
 
 def get_station_ids(obs, station_id):
+    """
+    Expand station ID to shape of obs
+    """
     s = obs.shape
     station_ids = np.array([list(station_id)] * s[0])
     return station_ids
 
 
 def get_date_strs(obs, dates):
+    """
+    Expand date_str to shape of obs
+    """
     s = obs.shape
     date_strs = [datetime.strftime(dt, date_format) for dt in list(dates)]
     date_strs = np.array([list(date_strs)] * s[1])
@@ -55,6 +67,9 @@ def get_date_strs(obs, dates):
 
 
 def return_date_idx(dates, date_str=None, y=None, m=None, d=None):
+    """
+    Return date index given a date string
+    """
     if date_str is not None:
         dt = datetime.strptime(date_str, date_format)
     else:
@@ -72,19 +87,12 @@ def crps_normal(mu, sigma, y):
     return crps
 
 
-def get_raw_crps(inargs, obs_df):
-
-    raw_df = prepare_raw_df(inargs, obs)
-
-
-def prepare_raw_crps(inargs):
-
-    ens = load_raw_ens_data(inargs.data_dir)
-
-
-
-#
+# Central routines
 def prepare_obs_df_and_compute_raw_crps(inargs):
+    """
+    Load and save observation dataframe and compute and return raw ens
+    CRPS.
+    """
     # Load the observation data
     obs, dates, station_id = load_obs_data(inargs.data_dir)
     ens = load_raw_ens_data(inargs.data_dir)
@@ -128,6 +136,9 @@ def prepare_obs_df_and_compute_raw_crps(inargs):
 
 
 def evaluate(inargs):
+    """
+    Compute CRPS for all experiments. Checks first if all data are present.
+    """
 
     # Load obs data
     obs_df = pd.read_csv(obs_csv)
@@ -155,24 +166,33 @@ def evaluate(inargs):
 # Main program
 def main(inargs):
     """
+    Main routine for evaluation. Saves the CRPS for all experiments 
+    and plots a histogram.
     """
     assert inargs.date_start == '2016-01-01' and inargs.date_stop == '2017-01-01', \
         'Flexible dates not implemented.'
 
     # Get observation data
-    if not os.path.exists(obs_csv) or inargs.recompute:
-        print('Load observation data')
-        raw_crps = prepare_obs_df_and_compute_raw_crps(inargs)
-    else:
-        print('Found observation data file')
+    raw_crps = prepare_obs_df_and_compute_raw_crps(inargs)
+
 
     # Compute scores
     crps_list = evaluate(inargs)
 
-    print(raw_crps)
+    # Print and save results
+    print('Raw CRPS', raw_crps)
     for i in range(len(inargs.eval_files)):
         print(inargs.eval_files[i], crps_list[i])
+    crps_df = pd.DataFrame({
+        'name': ['raw_ensemble'] + [e.rstrip('.csv') for e in inargs.eval_files],
+        'crps': [raw_crps] + crps_list
+        })
+    crps_df.to_csv('./crps.csv')
 
+    # Plot results
+    crps_df.plot.bar(x='name', y='crps')
+    plt.tight_layout()
+    plt.savefig('./results')
 
 
 if __name__ == '__main__':
@@ -196,11 +216,6 @@ if __name__ == '__main__':
                         type=str,
                         default='2017-01-01',
                         help='Exclusive.')
-    parser.add_argument('--recompute',
-                        dest='recompute',
-                        action='store_true',
-                        help='If given, recompute pre-processed file.')
-    parser.set_defaults(recompute=False)
 
     args = parser.parse_args()
 
