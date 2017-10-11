@@ -372,7 +372,7 @@ def loop_over_days(data_dir, model, date_str_start, date_str_stop,
         valid_crps_list.append(valid_crps)
 
         # Store predictions
-        p_means, p_stds = p[0], p[1]
+        p_means, p_stds = p[:, 0], p[:, 1]
         mean_list.extend(list(p_means))
         std_list.extend(list(p_stds))
 
