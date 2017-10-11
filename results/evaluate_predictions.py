@@ -9,6 +9,10 @@ import numpy as np
 import pandas as pd
 import os
 from scipy.stats import norm
+import sys
+sys.path.append('/Users/stephanrasp/repositories/enstools')
+from enstools.scores import crps_sample
+import pdb
 
 
 # Basic setup
@@ -26,6 +30,14 @@ def load_obs_data(data_dir):
     dates = num2date(rg.variables['time'][:],
                      units=rg.variables['time'].units)
     return obs, dates, station_id
+
+
+def load_raw_ens_data(data_dir):
+    """
+    """
+    rg = Dataset(data_dir + 'data_interpolated_00UTC.nc')
+    ens = rg.variables['t2m_fc'][:]
+    return ens # time, ens, station
 
 
 def get_station_ids(obs, station_id):
@@ -60,10 +72,22 @@ def crps_normal(mu, sigma, y):
     return crps
 
 
+def get_raw_crps(inargs, obs_df):
+
+    raw_df = prepare_raw_df(inargs, obs)
+
+
+def prepare_raw_crps(inargs):
+
+    ens = load_raw_ens_data(inargs.data_dir)
+
+
+
 #
-def prepare_obs_df(inargs):
+def prepare_obs_df_and_compute_raw_crps(inargs):
     # Load the observation data
     obs, dates, station_id = load_obs_data(inargs.data_dir)
+    ens = load_raw_ens_data(inargs.data_dir)
 
     # Create corresponding date and station_id arrays
     date_array = get_date_strs(obs, dates)
@@ -75,11 +99,16 @@ def prepare_obs_df(inargs):
     obs = obs[date_idx_start:date_idx_stop]
     date_array = date_array[date_idx_start:date_idx_stop]
     station_id_array = station_id_array[date_idx_start:date_idx_stop]
+    ens = ens[date_idx_start:date_idx_stop]
+
+    # Reorder axes of ens
+    ens = np.rollaxis(ens, 1, 0)
 
     # Ravel arrays
     obs = np.ravel(obs)
     date_array = np.ravel(date_array)
     station_id_array = np.ravel(station_id_array)
+    ens = np.reshape(ens, (ens.shape[0], -1))
 
     # Remove NaNs
     mask = np.isfinite(obs)
@@ -91,6 +120,11 @@ def prepare_obs_df(inargs):
         'obs': obs[mask],
         })
     obs_df.to_csv(obs_csv)
+
+    # Compute raw CRPS
+    raw_crps = crps_sample(obs[mask].data, ens[:, mask].data, mean=True)
+
+    return raw_crps
 
 
 def evaluate(inargs):
@@ -122,17 +156,20 @@ def evaluate(inargs):
 def main(inargs):
     """
     """
+    assert inargs.date_start == '2016-01-01' and inargs.date_stop == '2017-01-01', \
+        'Flexible dates not implemented.'
 
     # Get observation data
     if not os.path.exists(obs_csv) or inargs.recompute:
         print('Load observation data')
-        prepare_obs_df(inargs)
+        raw_crps = prepare_obs_df_and_compute_raw_crps(inargs)
     else:
         print('Found observation data file')
 
     # Compute scores
     crps_list = evaluate(inargs)
 
+    print(raw_crps)
     for i in range(len(inargs.eval_files)):
         print(inargs.eval_files[i], crps_list[i])
 
