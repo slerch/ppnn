@@ -361,8 +361,8 @@ def loop_over_days(data_dir, model, date_str_start, date_str_stop,
                 verbose=verbose,
                 callbacks=[es],
                 )
-            train_crps = model.evaluate(train_set.features, tobs_train, verbose=0)[0]
-            valid_crps = model.evaluate(test_set.features, tobs_test, verbose=0)[0]
+            train_crps = model.evaluate(train_set.features, train_set.targets, verbose=0)[0]
+            valid_crps = model.evaluate(test_set.features, test_set.targets, verbose=0)[0]
 
             # Get predictions
             p = model.predict(test_set.features)

@@ -81,6 +81,8 @@ def crps_normal(mu, sigma, y):
     """
     Compute CRPS for a Gaussian distribution. 
     """
+    # Make sure sigma is positive
+    sigma = np.abs(sigma)
     loc = (y - mu) / sigma
     crps = sigma * (loc * (2 * norm.cdf(loc) - 1) + 
                     2 * norm.pdf(loc) - 1. / np.sqrt(np.pi))
