@@ -102,7 +102,7 @@ def load_raw_data(data_dir, aux_dict=None):
                 if 'geo' in aux_fn:   
                     # Should probably look at dimensions
                     fl.append(np.array([data] * ntime))
-                    feature_names.extend(var)
+                    feature_names.extend([var])
                 else:
                     fl.append(np.mean(data, axis=1))
                     fl.append(np.std(data, axis=1, ddof=1))

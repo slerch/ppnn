@@ -8,3 +8,4 @@
 6,0.9124535802724497,embedding_nn_train_2015_pred_2016
 7,0.9369787929132188,hidden_nn_aux_train_2015_pred_2016
 8,0.8579386006515747,embedding_nn_aux_train_2015_pred_2016
+9,0.9427409254599137,fc_network_aux_train_2015_pred_2016
