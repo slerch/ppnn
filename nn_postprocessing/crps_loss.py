@@ -57,6 +57,7 @@ def crps_cost_function_seq(target, pred):
     sigma = pred[:, :, 1]
     
     tar = target[:, :, 0]
+    # [sample, time_step]
 
     # To stop sigma from becoming negative we first have to 
     # convert it the the variance and then take the square
@@ -68,5 +69,7 @@ def crps_cost_function_seq(target, pred):
     Phi = 0.5 * (1.0 + erf(loc / np.sqrt(2.0)))
     # First we will compute the crps for each input/target pair
     crps =  K.sqrt(var) * (loc * (2. * Phi - 1.) + 2 * phi - 1. / np.sqrt(np.pi))
-    # Then we take the mean. The cost is now a scalar
-    return K.mean(crps)
+
+    # Here we do not take the mean because we want keras to be able to apply
+    # weights afterwards!
+    return crps
