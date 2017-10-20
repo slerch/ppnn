@@ -5,6 +5,8 @@ structured at the moment.
 
 Author: Stephan Rasp
 """
+import os
+print('Anaconda environment:', os.environ['CONDA_DEFAULT_ENV'])
 
 from scipy.stats import norm
 import numpy as np
@@ -24,7 +26,7 @@ date_format = '%Y-%m-%d'
 def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
                         predict_date=None, fclt=None, window_size=None,
                         preloaded_data=None, aux_dict=None,
-                        verbose=1):
+                        verbose=1, seq_len=None, fill_value=None):
     """Load data and return train and test set objects.
     
     Parameters:
@@ -36,6 +38,8 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
                         feature_names]
         aux_dict: Dictionary with name of auxiliary file and 
                   list of variables. If None, only temperature.
+        seq_len: If given, return sequence data for RNNs
+        fill_value: If given, convert missing data to fill_value
     """
 
     # Load raw data from netcdf files
@@ -59,7 +63,8 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
 
     # Split into test and train set and scale features
     train_set, test_set = split_and_scale(raw_data, train_dates_idxs, 
-                                          test_dates_idxs, verbose)
+                                          test_dates_idxs, verbose,
+                                          seq_len, fill_value)
 
     return train_set, test_set
 
@@ -109,23 +114,26 @@ def load_raw_data(data_dir, aux_dict=None):
                     feature_names.extend([var + '_mean', var + '_std'])
             rg.close()
     
-    return target, np.array(fl, dtype='float32'), dates, station_id, feature_names
+    return (target.data, np.array(fl, dtype='float32'), dates, station_id, 
+            feature_names)
 
 
 class DataContainer(object):
     """Class for storing data
     """
     def __init__(self, targets, features, cont_ids, station_ids, date_strs,
-                 feature_names):
+                 feature_names, sample_weights=None):
         self.targets = targets
         self.features = features
         self.cont_ids = cont_ids
         self.station_ids = station_ids
         self.date_strs = date_strs
         self.feature_names = feature_names
+        self.sample_weights = sample_weights
 
 
-def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1):
+def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
+                    seq_len=None, fill_value=None):
     """
     """
 
@@ -140,26 +148,62 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1):
         if verbose == 1:
             print('%s set contains %i days' % 
                   (set_name, dates_idxs[1] - dates_idxs[0]))
-        t = targets[dates_idxs[0]:dates_idxs[1]] # [date, station]
-        f = features[:, dates_idxs[0]:dates_idxs[1]] # [feature, date, station]
 
-        # Ravel arrays, combine dates and stations --> instances
-        t = np.reshape(t, (-1)) # [instances]
-        f = np.reshape(f, (f.shape[0], -1)) # [features, instances]
+        if seq_len is None:
+            t = targets[dates_idxs[0]:dates_idxs[1]] # [date, station]
+            f = features[:, dates_idxs[0]:dates_idxs[1]] # [feature, date, station]
 
-        # Remove NaNs in observations
-        nan_mask = np.isfinite(t.data)
+            # Ravel arrays, combine dates and stations --> instances
+            t = np.reshape(t, (-1)) # [instances]
+            f = np.reshape(f, (f.shape[0], -1)) # [features, instances]
+
+            # Swap feature axes
+            f = np.rollaxis(f, 1, 0) # [instances, features]
+
+            # Get nan mast from target
+            nan_mask = np.isfinite(t)
+        else:
+            t = targets[dates_idxs[0]-seq_len+1:dates_idxs[1]] # [date, station]
+            f = features[:, dates_idxs[0]-seq_len+1:dates_idxs[1]] # [feature, date, station]
+
+            # Stack time steps for sequences
+            # [time_step, feature, day, station]
+            t = np.stack([t[i:-(seq_len-i-1) or None] for i in range(seq_len)])
+            # [time_step, day, station]
+            f = np.stack([f[:, i:-(seq_len-i-1) or None] for i in range(seq_len)])
+
+            # Ravel arrays [seq, feature, instance]
+            t = np.reshape(t, (seq_len, -1))
+            f = np.reshape(f, (seq_len, f.shape[1], -1))
+
+            # Roll arrays[sample, time step, feature]
+            t = np.rollaxis(t, 1, 0)
+            f = np.rollaxis(f, 2, 0)
+            t = np.atleast_3d(t)
+
+            # Get nan mask from last entry of target
+            nan_mask = np.isfinite(t[:, -1, 0])
+        
+        # Apply NaN mask
+        f = f[nan_mask]
         t = t[nan_mask]
-        f = f[:, nan_mask]
-
-        # Swap feature axes
-        f = np.rollaxis(f, 1, 0) # [instances, features]
 
         # Scale features
         if set_name == 'train': # Get maximas
-            features_max = np.max(f, axis=0)
+            if seq_len is None:
+                features_max = np.max(f, axis=0)
+            else:
+                features_max = np.max(f, axis=(0, 1))
         f /= features_max
 
+        # Replace NaNs with fill value is requested
+        if fill_value is not None:
+            assert seq_len is not None, 'fill value only implemented for sequences.'
+            weights = np.array(np.isfinite(t[:, :, 0]), dtype=np.float32)
+            t[np.isnan(t)] = fill_value
+        else:
+            weights = None
+        
         # Get additional data
         cont_ids = get_cont_ids(features, nan_mask, dates_idxs)
         station_ids = get_station_ids(features, station_id, nan_mask, dates_idxs)
@@ -167,7 +211,7 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1):
 
         # Put in data container
         data_sets.append(DataContainer(t, f, cont_ids, station_ids, 
-                                       date_strs, feature_names))
+                                       date_strs, feature_names, weights))
 
     return data_sets
 
