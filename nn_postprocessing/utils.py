@@ -5,6 +5,8 @@ structured at the moment.
 
 Author: Stephan Rasp
 """
+import os
+print('Anaconda environment:', os.environ['CONDA_DEFAULT_ENV'])
 
 from scipy.stats import norm
 import numpy as np
