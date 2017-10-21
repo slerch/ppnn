@@ -6,10 +6,11 @@ structured at the moment.
 Author: Stephan Rasp
 """
 import os
-print('Anaconda environment:', os.environ['CONDA_DEFAULT_ENV'])
-
+import platform
+import copy
 from scipy.stats import norm
 import numpy as np
+np.random.seed(42)
 from netCDF4 import num2date, Dataset
 from emos_network_theano import EMOS_Network
 import timeit
@@ -18,15 +19,19 @@ from datetime import datetime
 from tqdm import tqdm
 import pandas as pd
 import pdb
+from sklearn.model_selection import train_test_split
 
 # Basic setup
+print('Anaconda environment:', os.environ['CONDA_DEFAULT_ENV'])
+print(platform.system(), platform.release())
 date_format = '%Y-%m-%d'
 
 # Data loading functions
 def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
                         predict_date=None, fclt=None, window_size=None,
                         preloaded_data=None, aux_dict=None,
-                        verbose=1, seq_len=None, fill_value=None):
+                        verbose=1, seq_len=None, fill_value=None,
+                        valid_size=None):
     """Load data and return train and test set objects.
     
     Parameters:
@@ -40,6 +45,8 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
                   list of variables. If None, only temperature.
         seq_len: If given, return sequence data for RNNs
         fill_value: If given, convert missing data to fill_value
+        valid_size: If given, returns a third set containing a given fraction of
+                    the train set.
     """
 
     # Load raw data from netcdf files
@@ -65,8 +72,31 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
     train_set, test_set = split_and_scale(raw_data, train_dates_idxs, 
                                           test_dates_idxs, verbose,
                                           seq_len, fill_value)
+    
+    # Split train set if requested
+    if valid_size is not None:
+        arrays = [train_set.targets, train_set.features, train_set.cont_ids, 
+                  train_set.station_ids, train_set.date_strs, 
+                  train_set.sample_weights]
+        train_arrays, valid_arrays = ([], [])
 
-    return train_set, test_set
+        random_idxs = np.arange(arrays[0].shape[0])
+        np.random.shuffle(random_idxs)
+        split_idx = int(random_idxs.shape[0] * 0.2)
+        train_idxs = random_idxs[split_idx:]
+        valid_idxs = random_idxs[:split_idx]
+
+        valid_set = copy.deepcopy(train_set)
+        for s, idxs in zip([train_set, valid_set], [train_idxs, valid_idxs]):
+            s.targets = arrays[0][idxs]
+            s.features = arrays[1][idxs]
+            s.cont_ids = arrays[2][idxs]
+            s.station_ids = arrays[3][idxs]
+            s.date_strs = arrays[4][idxs]
+            s.sample_weights = arrays[5][idxs]
+        return train_set, test_set, valid_set
+    else:
+        return train_set, test_set
 
 
 def load_raw_data(data_dir, aux_dict=None):
