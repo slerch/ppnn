@@ -235,7 +235,7 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
             weights = None
         
         # Get additional data
-        cont_ids = get_cont_ids(features, nan_mask, dates_idxs)
+        cont_ids = get_cont_ids(features, nan_mask, dates_idxs, seq_len)
         station_ids = get_station_ids(features, station_id, nan_mask, dates_idxs)
         date_strs = get_date_strs(features, dates, nan_mask, dates_idxs)
 
@@ -246,11 +246,13 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
     return data_sets
 
 
-def get_cont_ids(features, nan_mask, dates_idxs):
+def get_cont_ids(features, nan_mask, dates_idxs, seq_len=None):
     s = features.shape
     cont_ids = np.array([np.arange(s[-1])] * s[1])
     cont_ids = cont_ids[dates_idxs[0]:dates_idxs[1]]
     cont_ids = np.reshape(cont_ids, (-1))
+    if seq_len is not None:
+        cont_ids = np.rollaxis(np.array([cont_ids] * seq_len), 1, 0)
     return cont_ids[nan_mask]
 
 
