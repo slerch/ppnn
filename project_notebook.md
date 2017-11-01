@@ -61,3 +61,21 @@ Open questions for this are:
 
 
 ### November 1
+
+*Stephan*
+
+Just a quick update of where things are and what I would like to try:
+
+- Categorical output networks
+    - Some things do not fit together yet. For example, the full 50 member ensemble input should be able to get the same results as the parameterized input, but it rellz doesn't. Why not?
+    - To explore this I would like to look at the individual steps of the network: 50 member to mean and std to categorical output. How complex does the NN need to be in order to achieve these things individually. 
+    - There is also a high sensitivity to hyper-parameters (learning rate, batch size) which I did not see (but also did not test) in the other experiments
+    - If wind speed data is available, I would like to try that as an example of a non-Gaussian variable. For this we would also need a reference experiment. 
+- RNNs
+    - I abandoned these for now since they didn't really work that well. But I think there might still be potential. At some point I would like to revisit this notebook again and go through everything again. Potentially I need to do some more hyper-parameter tuning.
+- XGBoost
+    - For the parameterized output (mean and std) XGBoost does not work, but we could try it for categorical output. It has the log loss built in, but maybe we could implement the CRPS or at least the RPS.
+- Additional data
+    - Here I would like to find a standard linear network setup which I can use to get the feature importance. 
+    - Should the categorical XGBoost work, that would be a great way to find out about the importance of the features.
+    - Then we can try picking the most important features with some data denial experiments.
