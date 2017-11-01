@@ -19,19 +19,19 @@ from datetime import datetime
 from tqdm import tqdm
 import pandas as pd
 import pdb
-from sklearn.model_selection import train_test_split
 
 # Basic setup
 print('Anaconda environment:', os.environ['CONDA_DEFAULT_ENV'])
 print(platform.system(), platform.release())
 date_format = '%Y-%m-%d'
 
+
 # Data loading functions
 def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
                         predict_date=None, fclt=None, window_size=None,
                         preloaded_data=None, aux_dict=None,
                         verbose=1, seq_len=None, fill_value=None,
-                        valid_size=None):
+                        valid_size=None, full_ensemble_t=False):
     """Load data and return train and test set objects.
     
     Parameters:
@@ -47,11 +47,12 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
         fill_value: If given, convert missing data to fill_value
         valid_size: If given, returns a third set containing a given fraction of
                     the train set.
+        full_ensemble_t: Return all 50 ensemble members for temperature
     """
 
     # Load raw data from netcdf files
     if preloaded_data is None:
-        raw_data = load_raw_data(data_dir, aux_dict)
+        raw_data = load_raw_data(data_dir, aux_dict, full_ensemble_t)
     else:
         raw_data = preloaded_data
 
@@ -71,7 +72,7 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
     # Split into test and train set and scale features
     train_set, test_set = split_and_scale(raw_data, train_dates_idxs, 
                                           test_dates_idxs, verbose,
-                                          seq_len, fill_value)
+                                          seq_len, fill_value, full_ensemble_t)
     
     # Split train set if requested
     if valid_size is not None:
@@ -99,7 +100,7 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
         return train_set, test_set
 
 
-def load_raw_data(data_dir, aux_dict=None):
+def load_raw_data(data_dir, aux_dict=None, full_ensemble_t=False):
     """Load raw data from NetCDF files.
     
     Ensemble mean and standard deviations are appended to feature list.
@@ -109,6 +110,7 @@ def load_raw_data(data_dir, aux_dict=None):
         data_dir: base directory where NetCDF files are stored
         aux_dict: Dictionary with name of auxiliary file and 
                   list of variables. If None, only temperature.
+        full_ensemble_t: Return all 50 ensemble members for temperature
     Returns:
         target: t2m_obs [date, station]
         feature_list: [feature, date, station]
@@ -124,10 +126,16 @@ def load_raw_data(data_dir, aux_dict=None):
     dates = num2date(rg.variables['time'][:],
                      units=rg.variables['time'].units)
     station_id = rg.variables['station_id'][:]
-    fl.append(np.mean(rg.variables['t2m_fc'][:], axis=1))
-    fl.append(np.std(rg.variables['t2m_fc'][:], axis=1, ddof=1))
+    if full_ensemble_t:
+        feature_names = []
+        for i in range(rg.variables['t2m_fc'].shape[1]):
+            fl.append(rg.variables['t2m_fc'][:, i, :])
+            feature_names.append('t2m_fc_ens%i' % (i+1))
+    else:
+        fl.append(np.mean(rg.variables['t2m_fc'][:], axis=1))
+        fl.append(np.std(rg.variables['t2m_fc'][:], axis=1, ddof=1))
+        feature_names = ['t2m_fc_mean', 't2m_fc_std']
     rg.close()
-    feature_names = ['t2m_fc_mean', 't2m_fc_std']
     
     if aux_dict is not None:
         for aux_fn, var_list in aux_dict.items():
@@ -163,7 +171,7 @@ class DataContainer(object):
 
 
 def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
-                    seq_len=None, fill_value=None):
+                    seq_len=None, fill_value=None, full_ensemble_t=False):
     """
     """
 
@@ -224,6 +232,10 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
                 features_max = np.max(f, axis=0)
             else:
                 features_max = np.max(f, axis=(0, 1))
+        if full_ensemble_t:
+            # Scale all temeperature members with same max
+            n_ens = 50  # ATTENTION: hard-coded
+            features_max[:n_ens] = np.max(features_max[:n_ens])
         f /= features_max
 
         # Replace NaNs with fill value is requested

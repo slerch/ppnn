@@ -56,5 +56,8 @@ The feature importance exploration suggests that for the standard deviation, the
 I would like to try building a network which outputs the probability for temperature bins. This way there would be no need to prescribe a distribution. For temperature, which is very normally distributed, I would expect this to be worse, but it would provide a "one-size-fits-all" method for non-normally distributed variables. To test this we could look at wind speed (if these data are available from the stations). I would then also specifically use all 50 members, not the mean and standard deviation. 
 
 Open questions for this are:
-- Which metric to use for the categorical output that is comparible to the CRPS? 
+- Which metric to use for the categorical output that is comparable to the CRPS? 
 - How to chose the bins? What about the first and last bin?
+
+
+### November 1
