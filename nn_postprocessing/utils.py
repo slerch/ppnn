@@ -305,6 +305,53 @@ def crps_normal(mu, sigma, y):
     return crps
 
 
+def maybe_correct_cat_crps(preds, targets, bin_edges):
+    """CRPS for categorical predictions. Not sure if correct
+
+    """
+    # pdb.set_trace()
+    # Convert input arrays
+    preds = np.array(np.atleast_2d(preds), dtype='float')
+    targets = np.array(np.atleast_1d(targets), dtype='float')
+
+    # preds [sample, bins]
+    # Find insert index
+    mat_bins = np.repeat(np.atleast_2d(bin_edges), targets.shape[0], axis=0)
+    b = mat_bins.T - targets
+    b[b < 0] = 999
+    insert_idxs = np.argmin(b, axis=0)
+
+    # Insert
+    ins_bin_edges = np.array([np.insert(np.array(bin_edges, dtype=float),
+                                        insert_idxs[i], targets[i])
+                              for i in range(targets.shape[0])])
+    ins_preds = np.array(
+        [np.insert(preds[i], insert_idxs[i], preds[i, insert_idxs[i] - 1])
+         for i in range(targets.shape[0])])
+
+    # Get obs
+    bin_obs = np.array([(ins_bin_edges[i, :-1] <= targets[i]) &
+                        (ins_bin_edges[i, 1:] > targets[i])
+                        for i in range(targets.shape[0])], dtype=int)
+
+    # Cumsum with weights
+    ins_preds *= np.diff(ins_bin_edges, axis=1)
+    cum_bin_obs = np.cumsum(bin_obs, axis=1)
+    cum_probs = np.cumsum(ins_preds, axis=1)
+    cum_probs = (cum_probs.T / cum_probs[:, -1]).T
+
+    # Get adjusted preds
+    adj_cum_probs = np.concatenate(
+        (np.zeros((cum_probs.shape[0], 1)), cum_probs), axis=1)
+    adj_cum_probs = (adj_cum_probs[:, :-1] + adj_cum_probs[:, 1:]) / 2
+
+    # Compute CRPS
+    crps = np.mean(np.sum(((adj_cum_probs - cum_bin_obs) ** 2) *
+                          np.diff(ins_bin_edges, axis=1), axis=1))
+    return crps
+
+
+# Experiment running functions
 def loop_over_days(data_dir, model, date_str_start, date_str_stop, 
                    window_size, fclt, epochs_max, early_stopping_delta=None,
                    lr=0.1, reinit_model=False, verbose=0, model_type='keras'):
@@ -408,7 +455,8 @@ def loop_over_days(data_dir, model, date_str_start, date_str_stop,
                 )
             # Get prediction
             p = model.predict(test_mean, test_std, test_set.targets)
-            p_means, p_stds = p[0], p[1]
+            # Convert to keras format
+            p = np.stack([p[0], p[1]], axis=1)
 
         elif model_type == 'EMOS_Network_keras':
             # Split mean and std
@@ -429,9 +477,9 @@ def loop_over_days(data_dir, model, date_str_start, date_str_stop,
                 callbacks=[es],
                 )
             train_crps = model.evaluate([train_mean, train_std], 
-                                        train_set.targets, verbose=0)[0]
+                                        train_set.targets, verbose=0)
             valid_crps = model.evaluate([test_mean, test_std], 
-                                        test_set.targets, verbose=0)[0]
+                                        test_set.targets, verbose=0)
             if verbose == 1:
                 print(train_crps, valid_crps)
 
@@ -449,8 +497,10 @@ def loop_over_days(data_dir, model, date_str_start, date_str_stop,
                 verbose=verbose,
                 callbacks=[es],
                 )
-            train_crps = model.evaluate(train_set.features, train_set.targets, verbose=0)[0]
-            valid_crps = model.evaluate(test_set.features, test_set.targets, verbose=0)[0]
+            train_crps = model.evaluate(train_set.features, train_set.targets,
+                                        verbose=0)
+            valid_crps = model.evaluate(test_set.features, test_set.targets,
+                                        verbose=0)
 
             # Get predictions
             p = model.predict(test_set.features)

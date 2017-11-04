@@ -4,4 +4,5 @@
 data/
 nn_postprocessing/__pycache__
 *.pyc
-
+.idea/
+/additional
