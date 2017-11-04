@@ -18,6 +18,7 @@ from keras.callbacks import EarlyStopping
 from datetime import datetime
 from tqdm import tqdm
 import pandas as pd
+from collections import OrderedDict
 import pdb
 
 # Basic setup
@@ -26,15 +27,39 @@ print(platform.system(), platform.release())
 date_format = '%Y-%m-%d'
 
 
+# Define aux variable dictionary
+aux_dict = OrderedDict()
+aux_dict['data_aux_geo_interpolated.nc'] = ['orog', 
+                                            'station_alt', 
+                                            'station_lat', 
+                                            'station_lon']
+aux_dict['data_aux_pl500_interpolated_00UTC.nc'] = ['u_pl500_fc',
+                                                    'v_pl500_fc',
+                                                    'gh_pl500_fc']
+aux_dict['data_aux_pl850_interpolated_00UTC.nc'] = ['u_pl850_fc',
+                                                    'v_pl850_fc',
+                                                    'q_pl850_fc']
+aux_dict['data_aux_surface_interpolated_00UTC.nc'] = ['cape_fc',
+                                                      'sp_fc',
+                                                      'tcc_fc']
+aux_dict['data_aux_surface_more_interpolated_part1_00UTC.nc']  = [
+    'sshf_fc', 'slhf_fc', 'u10_fc','v10_fc'
+]
+aux_dict['data_aux_surface_more_interpolated_part2_00UTC.nc']  = [
+    'ssr_fc', 'str_fc', 'd2m_fc','sm_fc'
+]
+
+
 # Data loading functions
 def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
-                        predict_date=None, fclt=None, window_size=None,
+                        predict_date=None, fclt=48, window_size=None,
                         preloaded_data=None, aux_dict=None,
                         verbose=1, seq_len=None, fill_value=None,
-                        valid_size=None, full_ensemble_t=False):
+                        valid_size=None, full_ensemble_t=False,
+                        add_current_error=False):
     """Load data and return train and test set objects.
     
-    Parameters:
+    Args:
         data_dir: base directory where NetCDF files are stored
         train_dates_idxs: list with start (inc) and stop (excl) date str
                           yyyy-mm-dd
@@ -48,6 +73,11 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
         valid_size: If given, returns a third set containing a given fraction of
                     the train set.
         full_ensemble_t: Return all 50 ensemble members for temperature
+        add_current_error: If True, add current mean forecast, obs and error
+        fclt: Forecast lead time in hours. Used if add_current_error is True.
+              Default = 48h
+    Returns:
+        train_set, test_set: Objects containing train and test data
     """
 
     # Load raw data from netcdf files
@@ -72,7 +102,9 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
     # Split into test and train set and scale features
     train_set, test_set = split_and_scale(raw_data, train_dates_idxs, 
                                           test_dates_idxs, verbose,
-                                          seq_len, fill_value, full_ensemble_t)
+                                          seq_len, fill_value, 
+                                          full_ensemble_t, add_current_error,
+                                          fclt)
     
     # Split train set if requested
     if valid_size is not None:
@@ -171,12 +203,18 @@ class DataContainer(object):
 
 
 def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
-                    seq_len=None, fill_value=None, full_ensemble_t=False):
+                    seq_len=None, fill_value=None, full_ensemble_t=False,
+                    add_current_error=False, fclt=48):
     """
     """
 
     # Unpack raw_data
     targets, features, dates, station_id, feature_names = raw_data
+
+    if add_current_error:
+        feature_names.extend(['curr_t2m_fc_mean', 'curr_t2m_fc_obs',
+                              'curr_err'])
+        assert full_ensemble_t is False, 'Current error not compatible with full ensemble.'
 
     data_sets = []
     for set_name, dates_idxs in zip(['train', 'test'], 
@@ -191,6 +229,17 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
             t = targets[dates_idxs[0]:dates_idxs[1]] # [date, station]
             f = features[:, dates_idxs[0]:dates_idxs[1]] # [feature, date, station]
 
+            if add_current_error:
+                didx = int(fclt / 24)
+                curr_obs = targets[dates_idxs[0] - didx:dates_idxs[1] - didx]
+                curr_fc = features[0, dates_idxs[0] - didx:dates_idxs[1] - didx]
+                # Replace missing observations with forecast values
+                curr_obs[np.isnan(curr_obs)] = curr_fc[np.isnan(curr_obs)]
+                curr_err = curr_obs - curr_fc
+    
+                new_f = np.stack((curr_fc, curr_obs, curr_err), axis=0)
+                f = np.concatenate((f, new_f), axis=0)
+
             # Ravel arrays, combine dates and stations --> instances
             t = np.reshape(t, (-1)) # [instances]
             f = np.reshape(f, (f.shape[0], -1)) # [features, instances]
@@ -198,9 +247,10 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
             # Swap feature axes
             f = np.rollaxis(f, 1, 0) # [instances, features]
 
-            # Get nan mast from target
+            # Get nan mask from target
             nan_mask = np.isfinite(t)
         else:
+            assert add_current_error is False, 'Current error not compatible with sequence'
             t = targets[dates_idxs[0]-seq_len+1:dates_idxs[1]] # [date, station]
             f = features[:, dates_idxs[0]-seq_len+1:dates_idxs[1]] # [feature, date, station]
 
@@ -229,9 +279,9 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
         # Scale features
         if set_name == 'train': # Get maximas
             if seq_len is None:
-                features_max = np.max(f, axis=0)
+                features_max = np.nanmax(f, axis=0)
             else:
-                features_max = np.max(f, axis=(0, 1))
+                features_max = np.nanmax(f, axis=(0, 1))
         if full_ensemble_t:
             # Scale all temeperature members with same max
             n_ens = 50  # ATTENTION: hard-coded
