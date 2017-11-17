@@ -23,6 +23,8 @@ library(crch)
 
 ## add some more data 
 
+## surface data 
+
 nc <- nc_open(paste0(data_dir, "data_aux_surface_interpolated_00UTC.nc"))
 
 cape <- ncvar_get(nc, "cape_fc")
@@ -30,6 +32,8 @@ sp <- ncvar_get(nc, "sp_fc") # surface pressure
 tcc <- ncvar_get(nc, "tcc_fc")
 
 nc_close(nc)
+
+# keep only mean and var
 
 cape_mean <- apply(cape, c(1,3), mean)
 cape_var <- apply(cape, c(1,3), var)
@@ -42,6 +46,33 @@ rm(sp)
 tcc_mean <- apply(tcc, c(1,3), mean)
 tcc_var <- apply(tcc, c(1,3), var)
 rm(tcc)
+
+## data from pressure level 850 hPa
+
+nc <- nc_open(paste0(data_dir, "data_aux_pl850_interpolated_00UTC.nc"))
+
+u_pl850 <- ncvar_get(nc, "u_pl850_fc")
+v_pl850 <- ncvar_get(nc, "v_pl850_fc")
+q_pl850 <- ncvar_get(nc, "q_pl850_fc") # specific humidity
+
+nc_close(nc)
+
+# keep only mean and var
+
+u_pl850_mean <- apply(u_pl850, c(1,3), mean)
+u_pl850_var <- apply(u_pl850, c(1,3), var)
+rm(u_pl850)
+
+v_pl850_mean <- apply(v_pl850, c(1,3), mean)
+v_pl850_var <- apply(v_pl850, c(1,3), var)
+rm(v_pl850)
+
+q_pl850_mean <- apply(q_pl850, c(1,3), mean)
+q_pl850_var <- apply(q_pl850, c(1,3), var)
+rm(q_pl850)
+
+## ... more ...
+
 
 date1 <- as.POSIXct("2016-01-01 00:00", tz = "UTC", origin = "1970-01-01 00:00")
 
@@ -63,6 +94,12 @@ sp_mean_train <- c(sp_mean[,ind_training])
 sp_var_train <- c(sp_var[,ind_training])
 tcc_mean_train <- c(tcc_mean[,ind_training])
 tcc_var_train <- c(tcc_var[,ind_training])
+u_pl850_mean_train <- c(u_pl850_mean[,ind_training])
+u_pl850_var_train <- c(u_pl850_var[,ind_training])
+v_pl850_mean_train <- c(v_pl850_mean[,ind_training])
+v_pl850_var_train <- c(v_pl850_var[,ind_training])
+q_pl850_mean_train <- c(q_pl850_mean[,ind_training])
+q_pl850_var_train <- c(q_pl850_var[,ind_training])
 
 # extract corresponding observation data
 obs_train <- c(obsdata[,ind_training])
@@ -78,16 +115,28 @@ if(anyNA(obs_train)){
   sp_var_train <- sp_var_train[ind_notNA]
   tcc_mean_train <- tcc_mean_train[ind_notNA]
   tcc_var_train <- tcc_var_train[ind_notNA]
+  u_pl850_mean_train <- u_pl850_mean_train[ind_notNA]
+  u_pl850_var_train <- u_pl850_var_train[ind_notNA]
+  v_pl850_mean_train <- v_pl850_mean_train[ind_notNA]
+  v_pl850_var_train <- v_pl850_var_train[ind_notNA]
+  q_pl850_mean_train <- q_pl850_mean_train[ind_notNA]
+  q_pl850_var_train <- q_pl850_var_train[ind_notNA]
 }
 
 data_train <- as.data.frame(cbind(obs_train, ensfc_train_mean, ensfc_train_var,
                                   cape_var_train, cape_var_train,
                                   sp_mean_train, sp_var_train,
-                                  tcc_mean_train, tcc_var_train))
+                                  tcc_mean_train, tcc_var_train,
+                                  u_pl850_mean_train, u_pl850_var_train,
+                                  v_pl850_mean_train, v_pl850_var_train,
+                                  q_pl850_mean_train, q_pl850_var_train))
 names(data_train) <- c("obs", "ens_mean", "ens_var",
                        "cape_mean", "cape_var", 
                        "sp_mean", "sp_var",
-                       "tcc_mean", "tcc_var")
+                       "tcc_mean", "tcc_var",
+                       "u_pl850_mean", "u_pl850_var",
+                       "v_pl850_mean", "v_pl850_var",
+                       "q_pl850_mean", "q_pl850_var")
 
 # model from before
 crch_model <- crch(obs ~ ens_mean  | ens_var,
@@ -100,14 +149,24 @@ crch_model2 <- crch(obs ~ ens_mean + cape_mean + sp_mean + tcc_mean | ens_var + 
                    data = data_train,
                    dist = "gaussian",
                    link.scale = "log")
-# test boosting
+
+# boosting original + surface
 crch_model3_boost <- crch(obs ~ .|.,
-                          data = data_train,
+                          data = data_train[,1:9],
                           dist = "gaussian",
                           link.scale = "log",
                           method = "boosting",
                           mstop = "aic")
 
+# boosting original + surface + pl 850
+crch_model4_boost <- crch(obs ~ .|.,
+                          data = data_train[,1:15],
+                          dist = "gaussian",
+                          link.scale = "log",
+                          method = "boosting",
+                          mstop = "aic")
+
+## evaluation
 
 startdate_eval <- as.POSIXct("2016-01-01 00:00", tz = "UTC", origin = "1970-01-01 00:00")
 enddate_eval <- as.POSIXct("2016-12-31 00:00", tz = "UTC", origin = "1970-01-01 00:00")
@@ -122,6 +181,12 @@ sp_mean_eval <- c(sp_mean[,ind_eval])
 sp_var_eval <- c(sp_var[,ind_eval])
 tcc_mean_eval <- c(tcc_mean[,ind_eval])
 tcc_var_eval <- c(tcc_var[,ind_eval])
+u_pl850_mean_eval <- c(u_pl850_mean[,ind_eval])
+u_pl850_var_eval <- c(u_pl850_var[,ind_eval])
+v_pl850_mean_eval <- c(v_pl850_mean[,ind_eval])
+v_pl850_var_eval <- c(v_pl850_var[,ind_eval])
+q_pl850_mean_eval <- c(q_pl850_mean[,ind_eval])
+q_pl850_var_eval <- c(q_pl850_var[,ind_eval])
 
 if(anyNA(obs_eval)){
   ind_notNA <- which(!is.na(obs_eval))
@@ -134,30 +199,41 @@ if(anyNA(obs_eval)){
   sp_var_eval <- sp_var_eval[ind_notNA]
   tcc_mean_eval <- tcc_mean_eval[ind_notNA]
   tcc_var_eval <- tcc_var_eval[ind_notNA]
+  u_pl850_mean_eval <- u_pl850_mean_eval[ind_notNA]
+  u_pl850_var_eval <- u_pl850_var_eval[ind_notNA]
+  v_pl850_mean_eval <- v_pl850_mean_eval[ind_notNA]
+  v_pl850_var_eval <- v_pl850_var_eval[ind_notNA]
+  q_pl850_mean_eval <- q_pl850_mean_eval[ind_notNA]
+  q_pl850_var_eval <- q_pl850_var_eval[ind_notNA]
 }
 data_eval <- as.data.frame(cbind(obs_eval, ensfc_eval_mean, ensfc_eval_var,
                                  cape_var_eval, cape_var_eval,
                                  sp_mean_eval, sp_var_eval,
-                                 tcc_mean_eval, tcc_var_eval))
+                                 tcc_mean_eval, tcc_var_eval,
+                                 u_pl850_mean_eval, u_pl850_var_eval,
+                                 v_pl850_mean_eval, v_pl850_var_eval,
+                                 q_pl850_mean_eval, q_pl850_var_eval))
 names(data_eval) <- c("obs", "ens_mean", "ens_var",
                       "cape_mean", "cape_var", 
                       "sp_mean", "sp_var",
-                      "tcc_mean", "tcc_var")
+                      "tcc_mean", "tcc_var",
+                      "u_pl850_mean", "u_pl850_var",
+                      "v_pl850_mean", "v_pl850_var",
+                      "q_pl850_mean", "q_pl850_var")
 
 loc1 <- as.numeric(predict(crch_model, data_eval, type = "location"))
 sc1 <- as.numeric(predict(crch_model, data_eval, type = "scale"))
-
 mean(crps_norm(y = data_eval$obs, mean = loc1, sd = sc1)) # 1.013909
 
 loc2 <- as.numeric(predict(crch_model2, data_eval, type = "location"))
 sc2 <- as.numeric(predict(crch_model2, data_eval, type = "scale"))
-
 mean(crps_norm(y = data_eval$obs, mean = loc2, sd = sc2)) # 0.9959192
 
 loc3 <- as.numeric(predict(crch_model3_boost, data_eval, type = "location"))
 sc3 <- as.numeric(predict(crch_model3_boost, data_eval, type = "scale"))
-
 mean(crps_norm(y = data_eval$obs, mean = loc3, sd = sc3)) # 0.992291
 
+loc4 <- as.numeric(predict(crch_model4_boost, data_eval, type = "location"))
+sc4 <- as.numeric(predict(crch_model4_boost, data_eval, type = "scale"))
+mean(crps_norm(y = data_eval$obs, mean = loc4, sd = sc4)) # 0.9961843 (worse than model 3)
 
-## should have normalized the values... oops
