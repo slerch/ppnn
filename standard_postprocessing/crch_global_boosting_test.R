@@ -487,6 +487,46 @@ loc7 <- as.numeric(predict(crch_model7_boost, data_eval, type = "location"))
 sc7 <- as.numeric(predict(crch_model7_boost, data_eval, type = "scale"))
 mean(crps_norm(y = data_eval$obs, mean = loc7, sd = sc7)) # 0.9765516
 
+##  "cv" stopping option
+crch_model7_boost_cv <- crch(obs ~ .|.,
+                             data = data_train[,1:35],
+                             dist = "gaussian",
+                             link.scale = "log",
+                             method = "boosting",
+                             mstop = "cv", # changed
+                             maxit = 500) # changed
+
+loc7_cv <- as.numeric(predict(crch_model7_boost_cv, data_eval, type = "location"))
+sc7_cv <- as.numeric(predict(crch_model7_boost_cv, data_eval, type = "scale"))
+mean(crps_norm(y = data_eval$obs, mean = loc7_cv, sd = sc7_cv)) # 0.9739505
+
+##  "bic" stopping option
+crch_model7_boost_bic <- crch(obs ~ .|.,
+                              data = data_train[,1:35],
+                              dist = "gaussian",
+                              link.scale = "log",
+                              method = "boosting",
+                              mstop = "bic", # changed
+                              maxit = 500) # changed
+
+loc7_bic <- as.numeric(predict(crch_model7_boost_bic, data_eval, type = "location"))
+sc7_bic <- as.numeric(predict(crch_model7_boost_bic, data_eval, type = "scale"))
+mean(crps_norm(y = data_eval$obs, mean = loc7_bic, sd = sc7_bic)) # 0.9739549
+
+##  "max" stopping option (with larger maxit value)
+crch_model7_boost_max <- crch(obs ~ .|.,
+                              data = data_train[,1:35],
+                              dist = "gaussian",
+                              link.scale = "log",
+                              method = "boosting",
+                              mstop = "max", # changed
+                              maxit = 10000) # changed
+
+loc7_max <- as.numeric(predict(crch_model7_boost_max, data_eval, type = "location"))
+sc7_max <- as.numeric(predict(crch_model7_boost_max, data_eval, type = "scale"))
+mean(crps_norm(y = data_eval$obs, mean = loc7_max, sd = sc7_max)) # 0.9710565
+
+
 ## test mstop = "max", "bic", "cv"
 
 ## local model implementation: loop over stations, use predict() directly within loop and save out of sample CRPS values
