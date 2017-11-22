@@ -1,7 +1,5 @@
 ## simpler: use data from 2015 to estimate model for 2016 (fixed training period)
 
-## note: normalization not required, happens automatically in crch.boost?
-
 ## load data
 data_dir <- "/media/sebastian/Elements/Postproc_NN/data/"
 library(ncdf4)
@@ -156,7 +154,7 @@ rm(sm)
 
 date1 <- as.POSIXct("2016-01-01 00:00", tz = "UTC", origin = "1970-01-01 00:00")
 
-# extract start and end date of rolling training period
+# extract start and end date training period
 enddate <- date1 - 2*24*3600
 startdate <- enddate - (365-1)*24*3600
 
@@ -526,7 +524,33 @@ loc7_max <- as.numeric(predict(crch_model7_boost_max, data_eval, type = "locatio
 sc7_max <- as.numeric(predict(crch_model7_boost_max, data_eval, type = "scale"))
 mean(crps_norm(y = data_eval$obs, mean = loc7_max, sd = sc7_max)) # 0.9710565
 
+##  "cv" stopping option and larger maxit value
+crch_model7_boost_cv2 <- crch(obs ~ .|.,
+                             data = data_train[,1:35],
+                             dist = "gaussian",
+                             link.scale = "log",
+                             method = "boosting",
+                             mstop = "cv", # changed
+                             maxit = 5000) # changed
 
-## test mstop = "max", "bic", "cv"
+loc7_cv2 <- as.numeric(predict(crch_model7_boost_cv2, data_eval, type = "location"))
+sc7_cv2 <- as.numeric(predict(crch_model7_boost_cv2, data_eval, type = "scale"))
+mean(crps_norm(y = data_eval$obs, mean = loc7_cv2, sd = sc7_cv2)) # 0.9710563
+
+# write to CSV... format:
+# ,date,mean,station_id,std
+# 0,2016-01-01,4.458285331726074,44.0,1.6594443321228027
+# 1,2016-01-01,1.7193480730056763,71.0,2.3401951789855957
+# 2,2016-01-01,0.6348963975906372,73.0,1.7656229734420776
+
+oos_mean <- loc7_cv2
+oos_sd <- sc7_cv2
+oos_dates <- as.character(rep(dates[ind_eval], each = 537)[ind_notNA])
+oos_stations <- rep(stations, length(ind_eval))[ind_notNA]
+
+df <- data.frame(cbind(oos_dates, oos_mean, oos_stations, oos_sd))
+names(df) <- c("date", "mean", "station_id", "std")
+
+write.csv(df, file = "results_emos_boosting_global.csv", quote = FALSE)
 
 ## local model implementation: loop over stations, use predict() directly within loop and save out of sample CRPS values
