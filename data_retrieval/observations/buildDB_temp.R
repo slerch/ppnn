@@ -1,3 +1,5 @@
+## code by Alexander Jordan
+
 library(RSQLite)
 library(stringr)
 library(readr)
