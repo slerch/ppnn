@@ -192,7 +192,7 @@ class DataContainer(object):
     """Class for storing data
     """
     def __init__(self, targets, features, cont_ids, station_ids, date_strs,
-                 feature_names, sample_weights=None):
+                 feature_names, sample_weights=None, scale_factors=None):
         self.targets = targets
         self.features = features
         self.cont_ids = cont_ids
@@ -200,6 +200,7 @@ class DataContainer(object):
         self.date_strs = date_strs
         self.feature_names = feature_names
         self.sample_weights = sample_weights
+        self.scale_factors = scale_factors
 
 
 def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
@@ -303,7 +304,8 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
 
         # Put in data container
         data_sets.append(DataContainer(t, f, cont_ids, station_ids, 
-                                       date_strs, feature_names, weights))
+                                       date_strs, feature_names, weights,
+                                       features_max))
 
     return data_sets
 
