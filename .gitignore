@@ -4,4 +4,10 @@
 data/
 nn_postprocessing/__pycache__
 *.pyc
+*.aux
+*.bbl
+*.blg
+*.log
+*.backup
+.idea/
 
