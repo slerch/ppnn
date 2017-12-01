@@ -358,7 +358,7 @@ def crps_normal(mu, sigma, y):
 
 
 def maybe_correct_cat_crps(preds, targets, bin_edges):
-    """CRPS for categorical predictions. Not sure if correct
+    """CRPS for categorical predictions. I think this is correct now.
 
     """
     # pdb.set_trace()
@@ -393,14 +393,19 @@ def maybe_correct_cat_crps(preds, targets, bin_edges):
     cum_probs = (cum_probs.T / cum_probs[:, -1]).T
 
     # Get adjusted preds
-    adj_cum_probs = np.concatenate(
-        (np.zeros((cum_probs.shape[0], 1)), cum_probs), axis=1)
-    adj_cum_probs = (adj_cum_probs[:, :-1] + adj_cum_probs[:, 1:]) / 2
+    adj_cum_probs = np.concatenate((np.zeros((cum_probs.shape[0], 1)),
+                                    cum_probs), axis=1)
+    # Compute squared area for each bin
+    sq_list = []
+    for i in range(cum_bin_obs.shape[1]):
+        x_l = np.abs(cum_bin_obs[:, i] - adj_cum_probs[:, i])
+        x_r = np.abs(cum_bin_obs[:, i] - adj_cum_probs[:, i + 1])
+        sq = 1./3. * (x_l ** 2 + x_l * x_r + x_r ** 2)
+        sq_list.append(sq)
 
     # Compute CRPS
-    crps = np.mean(np.sum(((adj_cum_probs - cum_bin_obs) ** 2) *
-                          np.diff(ins_bin_edges, axis=1), axis=1))
-    return crps
+    crps = np.sum(np.array(sq_list).T * np.diff(ins_bin_edges, axis=1), axis=1)
+    return np.mean(crps)
 
 
 # Experiment running functions

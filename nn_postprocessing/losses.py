@@ -76,7 +76,7 @@ def crps_cost_function_seq(y_true, y_pred):
     phi = 1.0 / np.sqrt(2.0 * np.pi) * K.exp(-K.square(loc) / 2.0)
     Phi = 0.5 * (1.0 + erf(loc / np.sqrt(2.0)))
     # First we will compute the crps for each input/target pair
-    crps =  K.sqrt(var) * (loc * (2. * Phi - 1.) + 2 * phi - 1. / np.sqrt(np.pi))
+    crps = K.sqrt(var) * (loc * (2. * Phi - 1.) + 2 * phi - 1. / np.sqrt(np.pi))
 
     # Here we do not take the mean because we want keras to be able to apply
     # weights afterwards!

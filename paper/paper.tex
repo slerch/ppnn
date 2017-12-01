@@ -17,7 +17,9 @@ This will be the abstract.
 
 \section{Introduction}
 % Describe problem of post-processing
-Numerical weather forecasts continue to be unreliable and biased \citep{Hemri2014} making post-processing necessary. 
+Numerical weather forecasts continue to be unreliable and biased \citep{Hemri2014} making post-processing necessary. The general premise of post-processing takes many forecast-observation pairs from the past and estimates error statistics to correct future forecasts. Probabilistic forecasts in NWP are usually achieved using ensemble techniques where the same of different models are run many times with slight changes to the initialization or representation of the physical processes in the model. ECMWF, for example, produces a 50-member ensemble. Ideally, a probabilistic forecast is sharp and reliable. Sharp means that the spread of the ensemble members, i.e. the uncertainty, should be small. But this is only valuable if the forecasts are reliable: The forecast distribution has to match the conditional true distribution \citep{Gneiting2005}. Typically, NWP models are underdispersive which means that their ensemble spread does not reflect the real uncertainty and often the corresponding observation falls outside of the ensemble spread. These forecast are therefore not reliable. 
+
+The goal of 
 
 \subsection{Aims}
 The main aim of this study is to test modern machine learning techniques for the problem of post-processing probabilistic forecasts. Our aim is not to get the best possible score. For this reason we did not conduct a lot of hyper-parameter tuning. 
@@ -77,36 +79,50 @@ where $F(t)$ is the forecast CDF and $H(t-y)$ is the Heaviside function. For a G
 \end{equation}
 where $\Phi \left( y-\mu/\sigma \right)$ and $\varphi \left( y-\mu/\sigma \right)$ are the CDF and PDF of $\mathcal{N}(0, 1)$ evaluated at the normalized prediction error $(y-\mu)/\sigma$.
 
-For probability bins the CRPS can be written as a step-wise combination of uniform distributions within the bins. 
+For probability bins the CRPS can be written as a step-wise combination of uniform distributions within the bins. A step-for-step guide of this method is illustrated in the notebook (???).
+
+@Sebastian: Do you think it would be interesting for people to write down in detail how to calculate the binned CRPS? If not I would just refer to the Rmarkdown or Jupyter notebook script.
+
+Since the exact computation of the discrete CRPS involves some computation steps which cannot be vectorized, we are using an approximate version as a loss function for the neural networks. 
+
 
 \subsubsection{Embeddings}
 
-Embeddings
+An embedding is a mapping from a discrete object to a vector of real numbers. In our case each station id is mapped to a 3-dimensional vector. The dimensions of the vector represent some property of the station. The values of the embedding vectors, also called latent features, are concatenated to the usual input features. During training, the latent features are learned along with the weights and biases of the network. 
 
 \subsubsection{Auxiliary variables}
 
-Add extra features
+As with the traditional boosting methods we can add auxiliary variables as features. A list of variables is given in Table???. For each variable we compute the mean and standard deviation. 
 
 \subsubsection{Using previous errors as features}
 
-Add previous errors
+If forecast errors are persistent in time, we can use the error of the forecast verifying at time $t$ to post-process the forecast for time $t$ + 48\,h. For this we are adding the ensemble mean forecast, the observation and the ensemble mean error at time $t$ as input features.
+
+\subsection{Discrete forecasts}
+
+Explain how data was converted to bins.
 
 \subsection{Gradient boosted trees}
 
 We are using XGBoost
 
 
-\section{Things we tried but didn't work}
-
-\subsection{Recurrent neural nets}
-
 
 \section{Results}
 \label{sec:results}
 
+\subsection{CRPS for 2016}
+Our validation metric is the mean CRPS for all stations and days of 2016. Ignoring missing values this amounts to 182,218 samples in the validation set. Table??? summarizes the score for all of our network configurations. 
+
+\subsection{Computational cost}
+Table??? shows the training time for all of the algorithms. All models were trained on the same workstation, no GPU was used. Most certainly, significant speed-ups could be achieved by optimizing each algorithm. Here, we simply wanted to show the huge difference between the traditional approaches, which take many hours, to the network approaches, which take seconds. 
 
 \subsection{Feature importance}
 Simple linear neural networks and XGBoost allow us to get an idea about how important each feature is.
+
+\section{Things we tried but didn't work}
+
+\subsection{Recurrent neural nets}
 
 
 \section{Discussion and conclusion}
