@@ -32,8 +32,8 @@ Using a rolling training period of the previous 25 (global model) / 360 (local m
 
 | Method | Description | CRPS for 2016 (no guarantee this is correct, needs automation!) |
 | ------ | ----------- | -------------- |
-| Global | Use all stations to train one model | 1.07 |
-| Local  | Only use data from station of interest | 0.96 |
+| Global | Use all stations to train one model | 1.01 |
+| Local  | Only use data from station of interest | 0.92 |
 
 The results are in the directory: `standard_postprocessing/preliminary_results`
 

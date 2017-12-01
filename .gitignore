@@ -10,4 +10,4 @@ nn_postprocessing/__pycache__
 *.log
 *.backup
 .idea/
-
+/additional
