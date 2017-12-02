@@ -11,3 +11,5 @@ nn_postprocessing/__pycache__
 *.backup
 .idea/
 /additional
+.Rdata
+.Rhistory
