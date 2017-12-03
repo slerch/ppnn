@@ -12,6 +12,7 @@ from losses import crps_cost_function
 from aux_dict import aux_dict
 import pdb
 
+
 def main(inargs):
     """Main program to run network experiment
 
@@ -39,6 +40,7 @@ def main(inargs):
             n_features,
             n_outputs,
             compile=True,
+            lr=inargs.lr,
         )
     elif inargs.model == 'hidden':
         model = build_hidden_model(
@@ -46,6 +48,7 @@ def main(inargs):
             n_outputs,
             hidden_nodes=inargs.hidden_nodes,
             compile=True,
+            lr=inargs.lr,
         )
     elif inargs.model == 'emb':
         max_id = int(np.max([train_set.cont_ids.max(),
@@ -57,6 +60,7 @@ def main(inargs):
             emb_size=inargs.emb_size,
             max_id=max_id,
             compile=True,
+            lr=inargs.lr,
         )
     else:
         raise ValueError('Wrong model type.')
@@ -125,7 +129,7 @@ if __name__ == '__main__':
     p.add_argument(
         '--results_dir',
         type=str,
-        default='../results/',
+        default='../results/csv_files/',
         help='Directory to save results to. '
              'Default: ../results/',
     )
@@ -205,6 +209,12 @@ if __name__ == '__main__':
         type=int,
         default=3,
         help='Number of latent features. Default: 3',
+    )
+    p.add_argument(
+        '--lr',
+        type=float,
+        default=0.001,
+        help='Learning rate. Default: 0.001',
     )
 
     # Other settings
