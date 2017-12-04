@@ -1,0 +1,9 @@
+# Config file for emb_nnet_train15 experiment
+exp_name: emb_nnet_train15
+model: emb
+epochs: 50
+lr: 0.001
+verbose: 1
+batch_size: 1024
+hidden_nodes: 10
+emb_size: 2

@@ -2,7 +2,7 @@
 
 """
 
-from argparse import ArgumentParser
+from configargparse import ArgParser
 import numpy as np
 from utils import get_train_test_sets, create_results_df
 from keras_models import build_fc_model, build_hidden_model, build_emb_model
@@ -116,15 +116,22 @@ def main(inargs):
 
 if __name__ == '__main__':
 
-    p = ArgumentParser()
+    p = ArgParser()
+
+    # Config file
+    p.add(
+        '-c', '--config',
+        is_config_file=True,
+        help='Config file path.'
+    )
 
     # Directories and experiment name
     p.add_argument(
         '--data_dir',
         type=str,
-        default='/Volumes/STICK/data/ppnn_data/',
+        default='/project/meteo/w2w/C7/ppnn_data/',
         help='Directory containing input data. '
-             'Default: /Volumes/STICK/data/ppnn_data/',
+             'Default: /project/meteo/w2w/C7/ppnn_data/',
     )
     p.add_argument(
         '--results_dir',

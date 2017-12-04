@@ -56,7 +56,7 @@ We are not taking into account observation error. Reference for how large that i
 
 \section{Modern machine learning techniques}
 
-\subsection{(Neural) networks\protect\footnote{A note on terminology: Many of our simpler models are not neural network or even networks in the traditional sense since they linearly connect the features and variables. In this regard we are basically doing linear regression using stochastic gradient descent. We will nevertheless use the term ``network'' to describe all models, but only use the term ``neural'' if there is a hidden layer and a non-linear activation function in the model.}}
+\subsection{(Neural) networks\protect\footnote{A note on terminology: Many of our simpler models are not neural networks or even networks in the traditional sense since they linearly connect the features and variables. In this regard we are basically doing linear regression using stochastic gradient descent. We will nevertheless use the term ``network'' to describe all models, but only use the term ``neural'' if there is a hidden layer and a non-linear activation function in the model.}}
 
 Rather than explaining all the basics of neural networks, we refer to two great resources on neural networks \citep{Nielsen2015, Goodfellow2016} and keep our discussion brief and visual (Fig???). The parameters of a neural network are trained using stochastic gradient descent (SGD). In particular we are using a version of SGD called Adam \citep{???}.
 
@@ -112,7 +112,7 @@ We are using XGBoost
 \label{sec:results}
 
 \subsection{CRPS for 2016}
-Our validation metric is the mean CRPS for all stations and days of 2016. Ignoring missing values this amounts to 182,218 samples in the validation set. Table??? summarizes the score for all of our network configurations. 
+Our validation metric is the mean CRPS for all stations and days of 2016. Ignoring missing values this amounts to 182,218 samples in the validation set. Table??? summarizes the score for all of our network configurations. We did some basic manual hyper-parameter tuning which is noted down in the table as well. 
 
 \subsection{Computational cost}
 Table??? shows the training time for all of the algorithms. All models were trained on the same workstation, no GPU was used. Most certainly, significant speed-ups could be achieved by optimizing each algorithm. Here, we simply wanted to show the huge difference between the traditional approaches, which take many hours, to the network approaches, which take seconds. 
@@ -128,6 +128,6 @@ Simple linear neural networks and XGBoost allow us to get an idea about how impo
 \section{Discussion and conclusion}
 
 
-\bibliography{bibliogrpaphy}
+\bibliography{bibliography}
 
 \end{document}
