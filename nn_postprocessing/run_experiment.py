@@ -11,6 +11,7 @@ from keras.callbacks import EarlyStopping
 from losses import crps_cost_function
 from aux_dict import aux_dict
 import pdb
+import pickle
 
 
 def main(inargs):
@@ -24,13 +25,17 @@ def main(inargs):
     """
     # Load data
     if verbose > 0: print('Loading train and test data.')
-    var_dict = aux_dict if inargs.use_aux else None
-    train_set, test_set = get_train_test_sets(
-        inargs.data_dir,
-        inargs.train_dates,
-        inargs.test_dates,
-        aux_dict=var_dict,
-    )
+    if inargs.pickled_sets is None:
+        var_dict = aux_dict if inargs.use_aux else None
+        train_set, test_set = get_train_test_sets(
+            inargs.data_dir,
+            inargs.train_dates,
+            inargs.test_dates,
+            aux_dict=var_dict,
+        )
+    else:
+        with open(inargs.pickled_sets) as f:
+            train_set, test_set = pickle.load(f)
 
     # Build keras model
     n_features = train_set.features.shape[1]
@@ -171,6 +176,12 @@ if __name__ == '__main__':
         help='If given, use auxiliary variables.',
     )
     p.set_defaults(use_aux=False)
+    p.add_argument(
+        '--pickled_sets',
+        type=str,
+        default=None,
+        help='Load pickled datasets. Default: None',
+    )
 
     # Network parameters
     p.add_argument(
