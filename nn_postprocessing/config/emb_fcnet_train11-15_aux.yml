@@ -1,0 +1,10 @@
+# Config file for fcnet_train15 experiment
+exp_name: emb_fcnet_train11-15_aux
+model: emb
+epochs: 50
+lr: 0.01
+verbose: 1
+batch_size: 1024
+use_aux: True
+emb_size: 2
+train_dates: 2011-01-01 2016-01-01

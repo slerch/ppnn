@@ -1,8 +1,8 @@
 # Config file for fcnet_train15 experiment
-exp_name: fcnet_train15
+exp_name: fcnet_train15_aux
 model: fc
 epochs: 50
-lr: 0.1
+lr: 0.01
 verbose: 1
 batch_size: 1024
 use_aux: True

@@ -34,7 +34,7 @@ def main(inargs):
             aux_dict=var_dict,
         )
     else:
-        with open(inargs.pickled_sets) as f:
+        with open(inargs.pickled_sets, 'rb') as f:
             train_set, test_set = pickle.load(f)
 
     # Build keras model
