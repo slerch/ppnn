@@ -32,6 +32,8 @@ def main(inargs):
             inargs.train_dates,
             inargs.test_dates,
             aux_dict=var_dict,
+            add_current_error=inargs.add_current_error,
+            current_error_len=inargs.current_error_len,
         )
     else:
         with open(inargs.pickled_sets, 'rb') as f:
@@ -176,6 +178,20 @@ if __name__ == '__main__':
         help='If given, use auxiliary variables.',
     )
     p.set_defaults(use_aux=False)
+    p.add_argument(
+        '--add_current_error',
+        dest='add_current_error',
+        action='store_true',
+        help='If given, use current error.',
+    )
+    p.set_defaults(add_current_error=False)
+    p.add_argument(
+        '--current_error_len',
+        type=int,
+        default=1,
+        help='Length of current error. Default: 1',
+    )
+    p.set_defaults(current_error=False)
     p.add_argument(
         '--pickled_sets',
         type=str,

@@ -56,7 +56,7 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
                         preloaded_data=None, aux_dict=None,
                         verbose=1, seq_len=None, fill_value=None,
                         valid_size=None, full_ensemble_t=False,
-                        add_current_error=False):
+                        add_current_error=False, current_error_len=1):
     """Load data and return train and test set objects.
     
     Args:
@@ -104,7 +104,7 @@ def get_train_test_sets(data_dir=None, train_dates=None, test_dates=None,
                                           test_dates_idxs, verbose,
                                           seq_len, fill_value, 
                                           full_ensemble_t, add_current_error,
-                                          fclt)
+                                          fclt, current_error_len)
     
     # Split train set if requested
     if valid_size is not None:
@@ -205,7 +205,7 @@ class DataContainer(object):
 
 def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
                     seq_len=None, fill_value=None, full_ensemble_t=False,
-                    add_current_error=False, fclt=48):
+                    add_current_error=False, fclt=48, current_error_len=1):
     """
     """
 
@@ -215,6 +215,13 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
     if add_current_error:
         feature_names.extend(['curr_t2m_fc_mean', 'curr_t2m_fc_obs',
                               'curr_err'])
+        if current_error_len > 1:
+            for i in range(1, current_error_len, 1):
+                feature_names.extend([
+                    'curr_t2m_fc_mean_m%i' % i,
+                    'curr_t2m_fc_obs_m%i' % i,
+                    'curr_err_m%i' % i
+                ])
         assert full_ensemble_t is False, 'Current error not compatible with full ensemble.'
 
     data_sets = []
@@ -232,13 +239,19 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
 
             if add_current_error:
                 didx = int(fclt / 24)
-                curr_obs = targets[dates_idxs[0] - didx:dates_idxs[1] - didx]
-                curr_fc = features[0, dates_idxs[0] - didx:dates_idxs[1] - didx]
-                # Replace missing observations with forecast values
-                curr_obs[np.isnan(curr_obs)] = curr_fc[np.isnan(curr_obs)]
-                curr_err = curr_obs - curr_fc
+                new_f_list = []
+                for i in range(current_error_len):
+                    d = didx + i
+                    curr_obs = targets[dates_idxs[0] - d:dates_idxs[1] - d]
+                    curr_fc = features[0, dates_idxs[0] - d:dates_idxs[1] - d]
+                    # Replace missing observations with forecast values
+                    # [date_shifted, station]
+                    curr_obs[np.isnan(curr_obs)] = curr_fc[np.isnan(curr_obs)]
+                    curr_err = curr_obs - curr_fc
+                    new_f_list.extend([curr_fc, curr_obs, curr_err])
     
-                new_f = np.stack((curr_fc, curr_obs, curr_err), axis=0)
+                new_f = np.stack(new_f_list, axis=0)
+                # [new features, date_shifted, station]
                 f = np.concatenate((f, new_f), axis=0)
 
             # Ravel arrays, combine dates and stations --> instances
