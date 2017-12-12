@@ -1,0 +1,11 @@
+# Config file for emb_fcnet_train15 experiment
+exp_name: emb_fcnet_train15_current_aux
+model: emb
+epochs: 50
+lr: 0.01
+verbose: 1
+batch_size: 1024
+emb_size: 2
+add_current_error: True
+current_error_len: 30
+use_aux: True

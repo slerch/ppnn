@@ -213,12 +213,11 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
     targets, features, dates, station_id, feature_names = raw_data
 
     if add_current_error:
-        feature_names.extend(['curr_t2m_fc_mean', 'curr_t2m_fc_obs',
+        feature_names.extend(['curr_t2m_fc_obs',
                               'curr_err'])
         if current_error_len > 1:
             for i in range(1, current_error_len, 1):
                 feature_names.extend([
-                    'curr_t2m_fc_mean_m%i' % i,
                     'curr_t2m_fc_obs_m%i' % i,
                     'curr_err_m%i' % i
                 ])
@@ -248,7 +247,7 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
                     # [date_shifted, station]
                     curr_obs[np.isnan(curr_obs)] = curr_fc[np.isnan(curr_obs)]
                     curr_err = curr_obs - curr_fc
-                    new_f_list.extend([curr_fc, curr_obs, curr_err])
+                    new_f_list.extend([curr_obs, curr_err])
     
                 new_f = np.stack(new_f_list, axis=0)
                 # [new features, date_shifted, station]

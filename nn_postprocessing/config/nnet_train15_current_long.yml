@@ -1,0 +1,12 @@
+# Config file for fcnet_train15 experiment
+exp_name: nnet_train15_current_long
+model: hidden
+hidden_nodes: 20
+epochs: 50
+lr: 0.01
+verbose: 1
+batch_size: 4096
+add_current_error: True
+current_error_len: 30
+validation_split: 0.2
+es_patience: 3

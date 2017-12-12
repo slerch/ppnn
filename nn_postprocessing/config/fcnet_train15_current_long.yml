@@ -1,0 +1,9 @@
+# Config file for fcnet_train15 experiment
+exp_name: fcnet_train15_current_long
+model: fc
+epochs: 50
+lr: 0.1
+verbose: 1
+batch_size: 4096
+add_current_error: True
+current_error_len: 30
