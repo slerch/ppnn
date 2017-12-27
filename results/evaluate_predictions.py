@@ -101,6 +101,7 @@ def plot_results(df):
     df.loc[:, 'improvement in %'] = (ref - df['crps'])  / ref * 100
     plt.title('Raw ensemble CRPS: %.2f' % ref)
     sns.barplot(y='name', x='crps', data=df, palette='cubehelix_r')
+    plt.xlim(0.6, 1.2)
     plt.savefig('./results', bbox_inches='tight')
 
 
@@ -214,9 +215,12 @@ def main(inargs):
     for i in range(len(inargs.eval_files)):
         print(inargs.eval_files[i], crps_list[i])
     crps_df = pd.DataFrame({
-        'name': ['raw_ensemble'] + [e.rstrip('.csv') for e in inargs.eval_files],
+        'name': ['raw_ensemble'] + [e.split('/')[-1].split('.')[0]
+                                    for e in inargs.eval_files],
         'crps': [raw_crps] + crps_list
         })
+    if inargs.sort_by_score:
+        crps_df = crps_df.sort_values('crps')
     crps_df.to_csv('./crps.csv')
 
     # Plot results
@@ -246,6 +250,11 @@ if __name__ == '__main__':
                         type=str,
                         default='2017-01-01',
                         help='Exclusive.')
+    parser.add_argument('--sort_by_score',
+                        dest='sort_by_score',
+                        action='store_true',
+                        help='Sort results by score for plotting.')
+    parser.set_defaults(sort_by_score=False)
     parser.add_argument('--verbose',
                         type=int,
                         default=0,
