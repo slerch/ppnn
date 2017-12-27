@@ -17,11 +17,14 @@ sys.path.append('/Users/stephanrasp/repositories/enstools')
 from enstools.scores import crps_sample
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from glob import glob
+import os
+import pdb
 
 # Basic setup
 date_format = '%Y-%m-%d'
 obs_csv = './obs.csv'
+raw_csv = './raw_crps.csv'
 
 
 # Auxiliary functions
@@ -97,7 +100,7 @@ def plot_results(df):
     ref = df['crps'][0]
     df.loc[:, 'improvement in %'] = (ref - df['crps'])  / ref * 100
     plt.title('Raw ensemble CRPS: %.2f' % ref)
-    sns.barplot(y='name', x='improvement in %', data=df, palette='cubehelix_r')
+    sns.barplot(y='name', x='crps', data=df, palette='cubehelix_r')
     plt.savefig('./results', bbox_inches='tight')
 
 
@@ -107,44 +110,55 @@ def prepare_obs_df_and_compute_raw_crps(inargs):
     Load and save observation dataframe and compute and return raw ens
     CRPS.
     """
-    # Load the observation data
-    obs, dates, station_id = load_obs_data(inargs.data_dir)
-    ens = load_raw_ens_data(inargs.data_dir)
 
-    # Create corresponding date and station_id arrays
-    date_array = get_date_strs(obs, dates)
-    station_id_array = get_station_ids(obs, station_id)
+    if not os.path.exists(obs_csv) or not os.path.exists(raw_csv) \
+            or inargs.recompute:
+        if inargs.verbose > 0: print('Get observations and compute raw crps')
+        # Load the observation data
+        obs, dates, station_id = load_obs_data(inargs.data_dir)
+        ens = load_raw_ens_data(inargs.data_dir)
 
-    # Cut out dates
-    date_idx_start = return_date_idx(dates, inargs.date_start)
-    date_idx_stop = return_date_idx(dates, inargs.date_stop)
-    obs = obs[date_idx_start:date_idx_stop]
-    date_array = date_array[date_idx_start:date_idx_stop]
-    station_id_array = station_id_array[date_idx_start:date_idx_stop]
-    ens = ens[date_idx_start:date_idx_stop]
+        # Create corresponding date and station_id arrays
+        date_array = get_date_strs(obs, dates)
+        station_id_array = get_station_ids(obs, station_id)
 
-    # Reorder axes of ens
-    ens = np.rollaxis(ens, 1, 0)
+        # Cut out dates
+        date_idx_start = return_date_idx(dates, inargs.date_start)
+        date_idx_stop = return_date_idx(dates, inargs.date_stop)
+        obs = obs[date_idx_start:date_idx_stop]
+        date_array = date_array[date_idx_start:date_idx_stop]
+        station_id_array = station_id_array[date_idx_start:date_idx_stop]
+        ens = ens[date_idx_start:date_idx_stop]
 
-    # Ravel arrays
-    obs = np.ravel(obs)
-    date_array = np.ravel(date_array)
-    station_id_array = np.ravel(station_id_array)
-    ens = np.reshape(ens, (ens.shape[0], -1))
+        # Reorder axes of ens
+        ens = np.rollaxis(ens, 1, 0)
 
-    # Remove NaNs
-    mask = np.isfinite(obs)
+        # Ravel arrays
+        obs = np.ravel(obs)
+        date_array = np.ravel(date_array)
+        station_id_array = np.ravel(station_id_array)
+        ens = np.reshape(ens, (ens.shape[0], -1))
 
-    # Save to dataframe
-    obs_df = pd.DataFrame({
-        'date': date_array[mask],
-        'station_id': station_id_array[mask],
-        'obs': obs[mask],
-        })
-    obs_df.to_csv(obs_csv)
+        # Remove NaNs
+        mask = np.isfinite(obs)
 
-    # Compute raw CRPS
-    raw_crps = crps_sample(obs[mask].data, ens[:, mask].data, mean=True)
+        # Save to dataframe
+        obs_df = pd.DataFrame({
+            'date': date_array[mask],
+            'station_id': station_id_array[mask],
+            'obs': obs[mask],
+            })
+        obs_df.to_csv(obs_csv)
+
+        # Compute raw CRPS
+        raw_crps = crps_sample(obs[mask].data, ens[:, mask].data, mean=True)
+        pd.DataFrame({
+            'raw_crps': [raw_crps]
+        }).to_csv(raw_csv)
+
+    else:
+        if inargs.verbose > 0: print('Read raw CRPS')
+        raw_crps = pd.read_csv(raw_csv)['raw_crps'][0]
 
     return raw_crps
 
@@ -158,6 +172,8 @@ def evaluate(inargs):
     obs_df = pd.read_csv(obs_csv)
 
     # Load predictions
+    if len(inargs.eval_files) == 0:
+        inargs.eval_files = glob('./csv_files/*.csv')
     pred_dfs = [pd.read_csv(fn) for fn in inargs.eval_files]
 
     # Sort first by date, then by station id 
@@ -165,11 +181,12 @@ def evaluate(inargs):
     pred_dfs = [p.sort_values(['date', 'station_id']) for p in pred_dfs]
 
     # Check if all required data are there
-    for p in pred_dfs:
+    for ip, p in enumerate(pred_dfs):
+        if inargs.verbose > 0: print('Checking file:', inargs.eval_files[ip])
         assert obs_df['date'].equals(p['date']), \
-            'Wrong dates.'
-        assert obs_df['station_id'].equals(p['station_id']), \
-            'Wrong station_ids.'
+            'Wrong dates for %s' % inargs.eval_files[ip]
+        assert np.array_equal(obs_df['station_id'], p['station_id']), \
+            'Wrong station_ids for %s' % inargs.eval_files[ip]
 
     # Compute scores
     crps_list = [np.mean(crps_normal(p['mean'], p['std'], obs_df['obs'])) for 
@@ -189,7 +206,6 @@ def main(inargs):
     # Get observation data
     raw_crps = prepare_obs_df_and_compute_raw_crps(inargs)
 
-
     # Compute scores
     crps_list = evaluate(inargs)
 
@@ -207,7 +223,6 @@ def main(inargs):
     plot_results(crps_df)
 
 
-
 if __name__ == '__main__':
 
     description = __doc__
@@ -220,7 +235,9 @@ if __name__ == '__main__':
     parser.add_argument('--eval_files',
                         type=str,
                         nargs='+',
-                        help='Predictions to be evaluated')
+                        default=[],
+                        help='Predictions to be evaluated. '
+                             'If empty, all from csv_file directory.')
     parser.add_argument('--date_start',
                         type=str,
                         default='2016-01-01',
@@ -229,6 +246,15 @@ if __name__ == '__main__':
                         type=str,
                         default='2017-01-01',
                         help='Exclusive.')
+    parser.add_argument('--verbose',
+                        type=int,
+                        default=0,
+                        help='Verbosity level.')
+    parser.add_argument('--recompute',
+                        dest='recompute',
+                        action='store_true',
+                        help='Do not try to reuse obs and raw ens crps file.')
+    parser.set_defaults(recompute=False)
 
     args = parser.parse_args()
 

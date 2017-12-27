@@ -234,6 +234,7 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
                   (set_name, dates_idxs[1] - dates_idxs[0]))
 
         if seq_len is None:
+            #pdb.set_trace()
             t = targets[dates_idxs[0]:dates_idxs[1]] # [date, station]
             f = features[:, dates_idxs[0]:dates_idxs[1]] # [feature, date, station]
 
@@ -242,7 +243,7 @@ def split_and_scale(raw_data, train_dates_idxs, test_dates_idxs, verbose=1,
                 new_f_list = []
                 for i in range(current_error_len):
                     d = didx + i
-                    curr_obs = targets[dates_idxs[0] - d:dates_idxs[1] - d]
+                    curr_obs = targets[dates_idxs[0]-d:dates_idxs[1]-d].copy()
                     curr_fc = features[0, dates_idxs[0] - d:dates_idxs[1] - d]
                     # Replace missing observations with forecast values
                     # [date_shifted, station]
