@@ -8,3 +8,4 @@ batch_size: 1024
 hidden_nodes: 100
 use_aux: True
 emb_size: 2
+pickled_sets: aux_15_16.pkl

@@ -10,3 +10,4 @@ use_aux: True
 train_dates: 2008-01-01 2016-01-01
 validation_split: 0.2
 es_patience: 2
+pickled_sets: aux_08-15_16.pkl

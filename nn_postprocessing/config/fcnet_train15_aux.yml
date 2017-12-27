@@ -6,3 +6,4 @@ lr: 0.01
 verbose: 1
 batch_size: 1024
 use_aux: True
+pickled_sets: aux_15_16.pkl

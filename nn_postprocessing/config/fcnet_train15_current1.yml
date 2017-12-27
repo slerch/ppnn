@@ -7,3 +7,4 @@ verbose: 1
 batch_size: 4096
 add_current_error: True
 current_error_len: 1
+pickled_sets: 15_16_current1.pkl

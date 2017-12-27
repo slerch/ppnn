@@ -12,20 +12,24 @@ from losses import crps_cost_function
 from aux_dict import aux_dict
 import pdb
 import pickle
+from timeit import default_timer
+import os
 
 
 def main(inargs):
     """Main program to run network experiment
 
     Args:
-        inargs:
-
-    Returns:
-
+        inargs: argparse namespace
     """
     # Load data
     if verbose > 0: print('Loading train and test data.')
-    if inargs.pickled_sets is None:
+    if inargs.pickled_sets is not None:
+        pickle_fn = inargs.data_dir + '/pickled/' + inargs.pickled_sets
+    else:
+        pickle_fn = 'None'
+    if inargs.pickled_sets is None or not os.path.exists(pickle_fn):
+        if inargs.verbose > 0: print('Loading new data sets')
         var_dict = aux_dict if inargs.use_aux else None
         train_set, test_set = get_train_test_sets(
             inargs.data_dir,
@@ -35,8 +39,14 @@ def main(inargs):
             add_current_error=inargs.add_current_error,
             current_error_len=inargs.current_error_len,
         )
+        # Save pickled dataset
+        if inargs.pickled_sets is not None:
+            if inargs.verbose > 0: print('Pickling:', pickle_fn)
+            with open(pickle_fn, 'wb') as f:
+                pickle.dump((train_set, test_set), f)
     else:
-        with open(inargs.pickled_sets, 'rb') as f:
+        if inargs.verbose > 0: print('Opening pickled data sets')
+        with open(pickle_fn, 'rb') as f:
             train_set, test_set = pickle.load(f)
 
     # Build keras model
@@ -90,6 +100,7 @@ def main(inargs):
     else:
         train_features = train_set.features
         test_features = test_set.features
+    t1 = default_timer()
     model.fit(
         train_features,
         train_set.targets,
@@ -99,6 +110,8 @@ def main(inargs):
         verbose=verbose,
         callbacks=callbacks,
     )
+    train_time = default_timer() - t1
+    if verbose > 0: print('Training time:', train_time)
 
     # Test model
     print('Test score:', model.evaluate(
@@ -116,7 +129,9 @@ def main(inargs):
             test_set.date_strs,
             test_set.station_ids,
             preds[:, 0],
-            preds[:, 1]
+            preds[:, 1],
+            train_time,
+            model.count_params(),
         )
         results_df.to_csv(inargs.results_dir + inargs.exp_name + '.csv')
 

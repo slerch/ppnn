@@ -7,3 +7,4 @@ verbose: 1
 batch_size: 1024
 use_aux: True
 train_dates: 2011-01-01 2016-01-01
+pickled_sets: aux_11_16.pkl

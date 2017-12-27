@@ -9,3 +9,4 @@ emb_size: 2
 add_current_error: True
 current_error_len: 30
 use_aux: True
+pickled_sets: aux_15_16_current30.pkl

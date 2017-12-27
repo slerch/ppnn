@@ -5,3 +5,4 @@ epochs: 50
 lr: 0.1
 verbose: 1
 batch_size: 10000
+pickled_sets: 15_16.pkl

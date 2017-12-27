@@ -10,3 +10,4 @@ add_current_error: True
 current_error_len: 30
 validation_split: 0.2
 es_patience: 3
+pickled_sets: 15_16_current30.pkl
