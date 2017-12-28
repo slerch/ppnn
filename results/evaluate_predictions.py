@@ -175,6 +175,8 @@ def evaluate(inargs):
     # Load predictions
     if len(inargs.eval_files) == 0:
         inargs.eval_files = glob('./csv_files/*.csv')
+    elif '*' in inargs.eval_files:
+        inargs.eval_files = glob(inargs.eval_files)
     pred_dfs = [pd.read_csv(fn) for fn in inargs.eval_files]
 
     # Sort first by date, then by station id 
