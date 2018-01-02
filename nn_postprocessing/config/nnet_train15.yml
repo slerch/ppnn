@@ -1,4 +1,3 @@
-# Config file for nnet_train15 experiment
 exp_name: nnet_train15
 model: hidden
 epochs: 75

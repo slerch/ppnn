@@ -1,0 +1,10 @@
+exp_name: fcnet_train15_current_aux
+model: fc
+epochs: 50
+lr: 0.01
+verbose: 1
+batch_size: 1024
+add_current_error: True
+current_error_len: 30
+use_aux: True
+pickled_sets: aux_15_16_current30.pkl

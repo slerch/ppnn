@@ -1,9 +1,9 @@
 exp_name: emb_nnet_train15_current_aux
 model: emb
-epochs: 30
-lr: 0.01
+epochs: 40
+lr: 0.001
 verbose: 1
-hidden_nodes: 50
+hidden_nodes: 30
 batch_size: 1024
 emb_size: 2
 add_current_error: True

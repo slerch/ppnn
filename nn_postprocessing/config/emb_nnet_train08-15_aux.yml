@@ -1,4 +1,3 @@
-# Config file for fcnet_train15 experiment
 exp_name: emb_nnet_train08-15_aux
 model: emb
 epochs: 50

@@ -1,4 +1,3 @@
-# Config file for fcnet_train15 experiment
 exp_name: fcnet_train11-15_aux
 model: fc
 epochs: 50

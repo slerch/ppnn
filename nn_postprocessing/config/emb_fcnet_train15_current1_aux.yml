@@ -1,0 +1,11 @@
+exp_name: emb_fcnet_train15_current1_aux
+model: emb
+epochs: 50
+lr: 0.01
+verbose: 1
+batch_size: 1024
+emb_size: 2
+add_current_error: True
+current_error_len: 1
+use_aux: True
+pickled_sets: aux_15_16_current1.pkl

@@ -66,6 +66,7 @@ def main(inargs):
             hidden_nodes=inargs.hidden_nodes,
             compile=True,
             lr=inargs.lr,
+            activation=inargs.activation
         )
     elif inargs.model == 'emb':
         max_id = int(np.max([train_set.cont_ids.max(),
@@ -78,6 +79,7 @@ def main(inargs):
             max_id=max_id,
             compile=True,
             lr=inargs.lr,
+            activation=inargs.activation
         )
     else:
         raise ValueError('Wrong model type.')
@@ -264,6 +266,13 @@ if __name__ == '__main__':
         type=float,
         default=0.001,
         help='Learning rate. Default: 0.001',
+    )
+    p.add_argument(
+        '--activation',
+        type=str,
+        default='relu',
+        help='Activation function for hidden layers. '
+             'Default: relu',
     )
 
     # Other settings

@@ -1,11 +1,10 @@
-# Config file for fcnet_train15 experiment
 exp_name: emb_nnet_train15_aux
 model: emb
 epochs: 30
 lr: 0.01
 verbose: 1
 batch_size: 1024
-hidden_nodes: 100
+hidden_nodes: 50
 use_aux: True
 emb_size: 2
 pickled_sets: aux_15_16.pkl

@@ -96,7 +96,8 @@ def build_hidden_model(n_features, n_outputs, hidden_nodes, compile=False,
 
 def build_emb_model(n_features, n_outputs, hidden_nodes, emb_size, max_id,
                     compile=False, optimizer='adam', lr=0.01,
-                    loss=crps_cost_function):
+                    loss=crps_cost_function,
+                    activation='relu'):
     """
 
     Args:
@@ -109,6 +110,7 @@ def build_emb_model(n_features, n_outputs, hidden_nodes, emb_size, max_id,
         optimizer: Name of optimizer
         lr: learning rate
         loss: loss function
+        activation: Activation function for hidden layer
 
     Returns:
         model: Keras model
@@ -122,7 +124,7 @@ def build_emb_model(n_features, n_outputs, hidden_nodes, emb_size, max_id,
     emb = Flatten()(emb)
     x = Concatenate()([features_in, emb])
     for h in hidden_nodes:
-        x = Dense(h, activation='relu')(x)
+        x = Dense(h, activation=activation)(x)
     x = Dense(n_outputs, activation='linear')(x)
     model = Model(inputs=[features_in, id_in], outputs=x)
 
