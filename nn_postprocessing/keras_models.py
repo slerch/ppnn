@@ -6,7 +6,8 @@ from losses import crps_cost_function
 
 import keras
 from keras.layers import Input, Dense, merge, Embedding, Flatten, Concatenate
-from keras.models import Model
+from keras.models import Model, Sequential
+from keras.optimizers import Adam, SGD
 import keras.backend as K
 from keras.callbacks import EarlyStopping
 
