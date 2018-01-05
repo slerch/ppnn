@@ -6,5 +6,5 @@ verbose: 1
 batch_size: 1024
 use_aux: True
 emb_size: 2
-train_dates: 2011-01-01 2016-01-01
+train_dates: [2011-01-01, 2016-01-01]
 pickled_sets: aux_11-15_16.pkl

@@ -1,4 +1,3 @@
-# Config file for fcnet_train15 experiment
 exp_name: nnet_train08-15_aux
 model: hidden
 epochs: 50
@@ -7,7 +6,7 @@ verbose: 1
 hidden_nodes: 500
 batch_size: 4096
 use_aux: True
-train_dates: 2008-01-01 2016-01-01
+train_dates: [2008-01-01, 2016-01-01]
 validation_split: 0.2
 es_patience: 2
 pickled_sets: aux_08-15_16.pkl
