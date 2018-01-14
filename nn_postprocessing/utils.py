@@ -21,6 +21,7 @@ import pandas as pd
 from collections import OrderedDict
 import pdb
 import pickle
+import matplotlib.pyplot as plt
 
 # Basic setup
 print('Anaconda environment:', os.environ['CONDA_DEFAULT_ENV'])
@@ -617,3 +618,28 @@ def save_pickle(data_dir, fn, train_dates=['2015-01-01', '2016-01-01'],
     )
     with open(data_dir + fn, 'wb') as f:
         pickle.dump(sets, f)
+
+
+def plot_fc(data_set, idx, distr='pdf', preds=None):
+    fc = data_set.features[idx, :2] * data_set.scale_factors
+    obs = data_set.targets[idx]
+
+    x = np.linspace(fc[0] - 5 * fc[1], fc[0] + 5 * fc[1], 100)
+    if distr == 'pdf':
+        y = norm.pdf(x, fc[0], fc[1])
+    elif distr == 'cdf':
+        y = norm.cdf(x, fc[0], fc[1])
+    else:
+        raise Exception
+    plt.plot(x, y, label='raw ensemble')
+    plt.axvline(obs, color='red', label='obs')
+    if preds is not None:
+        p = preds[idx]
+        if distr == 'pdf':
+            y = norm.pdf(x, p[0], p[1])
+        elif distr == 'cdf':
+            y = norm.cdf(x, p[0], p[1])
+        plt.plot(x, y, label='prediction')
+    plt.xlabel('Temperature [C]')
+    plt.legend()
+    plt.show()
