@@ -6,7 +6,7 @@ EMOS Network implementation in theano.
 import theano
 import theano.tensor as T
 import numpy as np
-from losses import crps_cost_function
+from .imports import *
 
 
 class EMOS_Network(object):

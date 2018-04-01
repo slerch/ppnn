@@ -2,7 +2,7 @@
 
 """
 
-from losses import crps_cost_function
+from .losses import crps_cost_function
 
 import keras
 from keras.layers import Input, Dense, merge, Embedding, Flatten, Concatenate
