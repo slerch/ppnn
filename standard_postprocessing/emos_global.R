@@ -49,7 +49,10 @@ objective_fun <- function(par, ensmean, ensvar, obs){
 gradfun_wrapper <- function(par, obs, ensmean, ensvar){
   loc <- cbind(1, ensmean) %*% par[1:2]
   sc <- sqrt(cbind(1, ensvar) %*% par[3:4])
-  dcrps_dtheta <- gradcrps_norm(y = obs, location = loc)
+  ##
+  ## ### forgot scale in gradient?
+  ##
+  dcrps_dtheta <- gradcrps_norm(y = obs, location = loc) 
   out1 <- dcrps_dtheta[,1] %*% cbind(1, ensmean)
   out2 <- dcrps_dtheta[,2] %*% 
     cbind(1/(2*sqrt(par[3]+par[4]*ensvar)), 
