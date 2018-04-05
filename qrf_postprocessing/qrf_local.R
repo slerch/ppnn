@@ -45,13 +45,12 @@ for(this_station in stations){
                               importance = FALSE)
   
   # compute quantiles on evaluation data
-  
-  ind_this_station_eval <- which(data_eval$station == this_station)
-  
   qrF_prediction <-   predict(qrF_model,
                               newdata = subset(data_eval, station == this_station),
                               what = qt_levels,
                               all = TRUE)
+  
+  ind_this_station_eval <- which(data_eval$station == this_station)
   
   qts_save[ind_this_station_eval,] <- qrF_prediction
 }
@@ -71,3 +70,6 @@ summary(qrf_crps)
 # nodesize = 5, ntree = 250, --> mean CRPS 0.9906
 # nodesize = 5, maxnodes = 20, ntree = 250, --> mean CRPS 1.058
 # all to default: --> mean CRPS 0.9972
+# nodesize = 5, ntree = 500 --> mean CRPS 0.9882
+# nodesize = 15, ntree = 500 --> mean CRPS 1.0083
+# nodesize = 5, ntree = 1000 --> 0.9875
