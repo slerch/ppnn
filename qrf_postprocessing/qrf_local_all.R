@@ -6,7 +6,7 @@
 rm(list=ls())
 
 data_dir <- "/media/sebastian/Elements/Postproc_NN/data/"
-load(paste0(data_dir, "data_prep_2015-16.Rdata"))
+load(paste0(data_dir, "data_prep_all.Rdata"))
 
 ## ignore sm_mean and sm_var due to missing and NA values leading to problems in estimation
 data_train$sm_mean <- NULL
@@ -72,11 +72,6 @@ summary(qrf_crps)
 # all to default: --> mean CRPS 0.9972
 # nodesize = 5, ntree = 500 --> mean CRPS 0.9882
 # nodesize = 15, ntree = 500 --> mean CRPS 1.0083
+
+# 0.8215!!
 # nodesize = 5, ntree = 1000 --> 0.9875
-
-
-vr <- sapply(data_eval$obs[ind_use],
-             function(i) rank(c(data_eval$obs[ind_use][i], 
-                                qts_save[ind_use,][i, ]),
-                              ties.method = "random")[1])
-

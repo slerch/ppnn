@@ -23,6 +23,10 @@ qrF_model <- quantregForest(x = data_train[,2:(ncol(data_train)-2)], y = data_tr
                             nodesize = 10,
                             ntree = 250,
                             importance = TRUE)
+
+# with default parameters:
+# qrF_model_default <- quantregForest(x = data_train[,2:(ncol(data_train)-2)], 
+#                                     y = data_train$obs)
   
 qt_levels <- seq(1/51, 50/51, by = 1/51)
 qts_save <- matrix(NA, nrow = nrow(data_eval), ncol = length(qt_levels))
@@ -40,10 +44,12 @@ qrf_crps <- crps_sample(y = data_eval$obs[ind_use],
 
 summary(qrf_crps)
 
-## with nodesize = 10, ntree = 250; mean 0.9890
+## with nodesize = 10, ntree = 250; mean CRPS 0.9890
+## with default parameters: mean CRPS 0.9869
+## tuning parameters do not seem to make a big difference! 
 
 qrF_model$importance
 importance(qrF_model, type=1, scale=TRUE)
 
 
-save(qrF_model, file = "qrF_model.Rdata")
+# save(qrF_model, file = "qrF_model.Rdata")
