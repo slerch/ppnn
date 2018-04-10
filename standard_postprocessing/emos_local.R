@@ -160,6 +160,9 @@ for(day_id in 1:length(eval_dates)){
     if(!is.finite(data_eval$obs)){next}
     loc_st <- c(cbind(1, data_eval$t2m_mean) %*% par_out[ind_st,1:2])
     scsquared_tmp <- c(cbind(1, data_eval$t2m_var) %*% par_out[ind_st,3:4])
+    if(is.na(scsquared_tmp)){
+      next
+    }
     if(scsquared_tmp <= 0){
       print("negative scale, taking absolute value")
       sc_st <- sqrt(abs(scsquared_tmp))
