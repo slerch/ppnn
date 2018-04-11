@@ -1,5 +1,6 @@
 ## implementation of standard EMOS model with rolling training window
 ## here: based on prepared Rdata file
+## test version with non-rolling training window (all of year 2015)
 
 ## --------------- data preparation --------------- ##
 
@@ -50,73 +51,37 @@ gradfun_wrapper <- function(par, obs, ensmean, ensvar){
   return(as.numeric(cbind(out1,out2)))
 }
 
-## --------------- post-processing function --------------- ##
+## --------------- post-processing  --------------- ##
 
-## main postprocessing function for a global EMOS 
-# i.e., using all available stations for training. Argiments:
-## input:
-# vdate = validdate for which EMOS coefficients should be determined (should be from dates vector)
-#         by the function
-#         for 00 UTC forecasts, only past 00 UTC fc cases are used, similarly for 12 UTC
-# train_length = length of rolling training period (in days)
-## output: vector of coefficients a,b,c,d to be used at vdate
+# determine training set
+train_end <- as.Date("2016-01-01 00:00 UTC") - days(2)
+train_start <- as.Date("2007-01-01 00:00 UTC") 
 
-postproc_global <- function(vdate, train_length){
-  
-  # determine training set
-  train_end <- vdate - days(2)
-  train_start <- train_end - days(train_length - 1)
-  
-  data_train <- subset(data, date >= train_start & date <= train_end)
-  
-  # remove incomplete cases (= NA obs or fc)
-  data_train <- data_train[complete.cases(data_train), ]
-  
-  # determine optimal EMOS coefficients a,b,c,d using minimum CRPS estimation
-  optim_out <- optim(par = c(1,1,1,1), 
-                     fn = objective_fun,
-                     gr = gradfun_wrapper,
-                     ensmean = data_train$t2m_mean, 
-                     ensvar = data_train$t2m_var, 
-                     obs = data_train$obs,
-                     method = "BFGS")
-  
-  # check convergence of the numerical optimization
-  if(optim_out$convergence != 0){
-    message("numerical optimization did not converge")
-  }
-  
-  # return optimal parameters
-  return(optim_out$par)
-}
+data_train <- subset(data, date >= train_start & date <= train_end)
+data_train <- data_train[complete.cases(data_train), ]
 
+# determine optimal EMOS coefficients a,b,c,d using minimum CRPS estimation
+optim_out <- optim(par = c(1,1,1,1), 
+                   fn = objective_fun,
+                   gr = gradfun_wrapper,
+                   ensmean = data_train$t2m_mean, 
+                   ensvar = data_train$t2m_var, 
+                   obs = data_train$obs,
+                   method = "L-BFGS-B",
+                   lower = c(-1,-1,-1,-1),
+                   upper = rep(10,4))
 
-# example for one day
-# tt <- as.Date("2016-01-01 00:00 UTC")
-# m <- 50
-# par_out <- postproc_global(tt, m)
-# par_out
-# data_eval <- subset(data, date == tt)
-# loc <- c(cbind(1, data_eval$t2m_mean) %*% par_out[1:2])
-# scsquared_tmp <- c(cbind(1, data_eval$t2m_var) %*% par_out[3:4])
-# if(any(scsquared_tmp <= 0)){
-#   print("negative scale, taking absolute value")
-#   sc <- sqrt(abs(scsquared_tmp))
-# } else{
-#   sc <- sqrt(scsquared_tmp)
-# }
-# summary(crps_norm(y = data_eval$obs, mean = loc, sd = sc))
+par_out <- optim_out$par
+par_out
 
-# all days in 2016
 eval_start <- as.Date("2016-01-01 00:00 UTC")
 eval_end <- as.Date("2016-12-31 00:00 UTC")
 eval_dates <- seq(eval_start, eval_end, by = "1 day")
 
-m <- 25
+data_eval_all <- subset(data, date >= eval_start & date <= eval_end)
+
 crps_pp <- NULL
 
-data_eval_all <- subset(data, date >= eval_start & date <= eval_end)
-  
 for(day_id in 1:length(eval_dates)){
   
   today <- eval_dates[day_id]
@@ -125,9 +90,6 @@ for(day_id in 1:length(eval_dates)){
   if(day(as.Date(today)) == 1){
     cat("Starting at", paste(Sys.time()), ":", as.character(today), "\n"); flush(stdout())
   }
-  
-  # post-processing
-  par_out <- postproc_global(vdate = today, train_length = m)
   
   # out of sample distribution parameters for today
   data_eval <- subset(data, date == today)
