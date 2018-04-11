@@ -16,3 +16,10 @@ metrics_dict = dict([(f.__name__, f) for f in [crps_cost_function]])
 get_custom_objects().update(metrics_dict)
 from timeit import default_timer
 from keras.callbacks import EarlyStopping
+import tensorflow as tf
+
+def limit_mem():
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    keras.backend.tensorflow_backend.set_session(tf.Session(config=config))
+limit_mem()

@@ -24,9 +24,9 @@ import pickle
 import matplotlib.pyplot as plt
 
 # Basic setup
-print('Anaconda environment:', os.environ['CONDA_DEFAULT_ENV'])
-print(platform.system(), platform.release())
-date_format = '%Y-%m-%d'
+# print('Anaconda environment:', os.environ['CONDA_DEFAULT_ENV'])
+# print(platform.system(), platform.release())
+# date_format = '%Y-%m-%d'
 
 
 # Define aux variable dictionary
