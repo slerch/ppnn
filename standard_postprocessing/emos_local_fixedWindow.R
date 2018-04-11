@@ -133,3 +133,6 @@ for(day_id in 1:length(eval_dates)){
 }
 
 summary(crps_pp)
+
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+# 0.066   0.443   0.647   0.905   1.101  19.608   14875 
