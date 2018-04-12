@@ -74,4 +74,4 @@ dim(qts_save)[1] - length(ind_use)
 grf_crps <- crps_sample(y = data_eval_all$obs[ind_use],
                         dat = qts_save[ind_use,])
 
-summary(grf_crps) # mean 1.2233  
+summary(grf_crps) # mean 1.0942 

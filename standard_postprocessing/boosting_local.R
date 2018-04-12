@@ -55,6 +55,7 @@ for(this_station in stations_list){
     next
   }
   
+  ## NOTE: boosting is only implemented for link.scale = "log", otherwise cryptic error message 
   crch_model <- crch(obs ~ .|.,
                      data = data_train[,-which(names(data) %in% c("date", "station"))],
                      dist = "gaussian",
