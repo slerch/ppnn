@@ -84,12 +84,4 @@ qrf_crps <- crps_sample(y = data_eval_all$obs[ind_use],
 
 summary(qrf_crps)
 
-# nodesize = 10, ntree = 250, --> mean CRPS 0.9964
-# nodesize = 5, ntree = 250, --> mean CRPS 0.9906
-# nodesize = 5, maxnodes = 20, ntree = 250, --> mean CRPS 1.058
-# all to default: --> mean CRPS 0.9972
-# nodesize = 5, ntree = 500 --> mean CRPS 0.9882
-# nodesize = 15, ntree = 500 --> mean CRPS 1.0083
-
-# 0.8215!!
-# nodesize = 5, ntree = 1000 --> 0.9875
+# 0.8215
