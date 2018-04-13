@@ -12,6 +12,7 @@ data$sm_var <- NULL
 
 library(quantregForest)
 library(scoringRules)
+library(lubridate)
 
 # train and eval dates (any date in date = valid date of fc and!)
 start_eval <- as.Date("2016-01-01 00:00", tz = "UTC")
