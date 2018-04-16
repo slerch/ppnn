@@ -27,8 +27,8 @@ start_train <- as.Date("2015-01-01 00:00", tz  = "UTC")
 # prepare training data set collection for faster subsetting later on
 data_train_all <- subset(data, date >= start_train & date <= end_train)
 
-qt_levels <- seq(1/51, 50/51, by = 1/51)
-qts_save <- matrix(NA, nrow = nrow(data_eval_all), ncol = length(qt_levels))
+# qt_levels <- seq(1/51, 50/51, by = 1/51)
+qt_levels <- seq(1/21, 20/51, by = 1/21)
 
 y_train <- data_train_all$obs
 X_train <- data_train_all[!(names(data_train_all) %in% c("obs", "date", "station"))]
@@ -37,13 +37,25 @@ X_train <- data_train_all[!(names(data_train_all) %in% c("obs", "date", "station
 grF_model <- quantile_forest(X_train, 
                              y_train,
                              quantiles = qt_levels,
-                             num.trees = 500,
-                             num.threads = 4)
+                             num.trees = 250,
+                             num.threads = 2)
 
 X_eval <- data_eval_all[!(names(data_eval_all) %in% c("obs", "date", "station"))]
 
 grF_prediction <-   predict(grF_model,
-                            X_eval,
+                            newdata = X_eval,
                             quantiles = qt_levels)
 
+head(grF_prediction)
+## lots of NaNs in quantiles - likely a problem due to amount of quantile levels
+## re- estimated with fewer levels? 
 
+ind_noNAinRow <- which(!apply(grF_prediction, 1, anyNA))
+ind_use <- intersect(which(!is.na(data_eval_all$obs)), ind_noNAinRow)
+
+dim(grF_prediction)[1] - length(ind_use)
+
+grf_crps <- crps_sample(y = data_eval_all$obs[ind_use],
+                        dat = grF_prediction[ind_use,])
+
+summary(grf_crps)

@@ -51,8 +51,8 @@ for(this_station in stations){
   grF_model <- quantile_forest(X_train, 
                                y_train,
                                quantiles = qt_levels,
-                               num.trees = 500,
-                               num.threads = 4)
+                               num.trees = 250,
+                               num.threads = 2)
   
   # compute quantiles on evaluation data
   data_eval_thisstation <- subset(data_eval_all, station == this_station)
@@ -76,3 +76,5 @@ grf_crps <- crps_sample(y = data_eval_all$obs[ind_use],
                         dat = qts_save[ind_use,])
 
 summary(grf_crps) # mean 1.0942 
+
+## mean 0.9979 with qt_levels <- seq(1/11, 10/11, by = 1/11)
