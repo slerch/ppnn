@@ -26,9 +26,13 @@ start_train <- as.Date("2015-01-01 00:00", tz  = "UTC")
 
 # prepare training data set collection for faster subsetting later on
 data_train_all <- subset(data, date >= start_train & date <= end_train)
+##
+## changed: exclude NAs here (might have lead to NaN's in predictions)
+##
+data_train_all <- data_train_all[complete.cases(data_train_all),] 
 
 # qt_levels <- seq(1/51, 50/51, by = 1/51)
-qt_levels <- seq(1/21, 20/51, by = 1/21)
+qt_levels <- seq(1/21, 20/21, by = 1/21)
 
 y_train <- data_train_all$obs
 X_train <- data_train_all[!(names(data_train_all) %in% c("obs", "date", "station"))]
