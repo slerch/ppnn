@@ -43,13 +43,13 @@ qrF_prediction <-   predict(qrF_model,
                             what = qt_levels,
                             all = TRUE)
 
-qt_levels <- seq(1/51, 50/51, by = 1/51)
-qts_save <- matrix(NA, nrow = nrow(data_eval), ncol = length(qt_levels))
-
-qrF_prediction <-   predict(qrF_model,
-                            data_eval,
-                            what = qt_levels,
-                            all = TRUE)
+# qt_levels <- seq(1/51, 50/51, by = 1/51)
+# qts_save <- matrix(NA, nrow = nrow(data_eval), ncol = length(qt_levels))
+# 
+# qrF_prediction <-   predict(qrF_model,
+#                             data_eval,
+#                             what = qt_levels,
+#                             all = TRUE)
 
 # Evaluation
 ind_noNAinRow <- which(!apply(qrF_prediction, 1, anyNA))
