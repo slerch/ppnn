@@ -27,7 +27,7 @@ start_train <- as.Date("2015-01-01 00:00", tz  = "UTC")
 # prepare training data set collection for faster subsetting later on
 data_train_all <- subset(data, date >= start_train & date <= end_train)
 
-qt_levels <- seq(1/51, 50/51, by = 1/51)
+qt_levels <- seq(1/6, 5/6, by = 1/6)
 qts_save <- matrix(NA, nrow = nrow(data_eval_all), ncol = length(qt_levels))
 
 stations <- unique(data$station)
@@ -51,7 +51,6 @@ for(this_station in stations){
   grF_model <- quantile_forest(X_train, 
                                y_train,
                                quantiles = qt_levels,
-                               num.trees = 250,
                                num.threads = 2)
   
   # compute quantiles on evaluation data
@@ -75,6 +74,9 @@ dim(qts_save)[1] - length(ind_use)
 grf_crps <- crps_sample(y = data_eval_all$obs[ind_use],
                         dat = qts_save[ind_use,])
 
-summary(grf_crps) # mean 1.0942 
+summary(grf_crps) # mean 1.0942 (with 1/51 quantiles)
 
 ## mean 0.9979 with qt_levels <- seq(1/11, 10/11, by = 1/11)
+## mean 1.0177 with 1/21 quantile steps
+## mean 1.0143 with 1/21 quantile steps, but default number of trees (2000)
+## mean XXX with 1/6 quantile steps

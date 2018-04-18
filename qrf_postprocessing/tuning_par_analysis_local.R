@@ -92,3 +92,66 @@ dev.off()
 # smaller nodesize is better, stronger effect
 # larger mtry is better, also larger effect
 # better with replacement, but effect not that large
+
+
+##
+
+# number of quantiles:
+
+## analysis code for qrf results / tuning parameter influence
+
+## here: influence of number of quantiles
+
+rm(list=ls())
+
+Rdata_dir <- "/media/sebastian/Elements/Postproc_NN/model_data/qrf/cluster_runs_local/"
+
+ntree.try <- c(250,500,1000)
+nodesize.try <- c(5,10)
+mtry.try <- c(20,25,30)
+replace.try <- c(1)
+nquants.try <- c(10, 20, 35, 50)
+
+pars <- expand.grid(as.factor(ntree.try), 
+                    as.factor(nodesize.try), 
+                    as.factor(mtry.try), 
+                    as.factor(replace.try),
+                    as.factor(nquants.try))
+names(pars) <- c("ntree", "nodesize", "mtry", "replace", "nquant")
+
+savenames <- paste0(Rdata_dir, "qrf_local_ntree", pars[,1], "_nodesize", pars[,2], "_mtry", pars[,3], "_repl", pars[,4], "_nQuant", pars[,5], ".Rdata")
+
+res <- rep(NA, length(savenames))
+for(file in savenames){
+  if(file.exists(file)){
+    load(file)
+    res[which(savenames == file)] <- mean(qrf_crps)
+  }
+}
+
+pars$crps <- res
+head(pars)
+
+pars[with(pars, order(crps)), ]
+
+library(ggplot2)
+library(gridExtra)
+
+pars1 <- pars
+
+p0 <- ggplot(pars1, aes(nquant, crps)) + geom_point()
+
+p1 <- ggplot(pars1, aes(ntree, crps, colour = nquant)) + geom_point()
+p2 <- ggplot(pars1, aes(nodesize, crps, colour = nquant)) + geom_point()
+p3 <- ggplot(pars1, aes(mtry, crps, colour = nquant)) + geom_point()
+
+p11 <- ggplot(pars1, aes(nquant, crps, colour = ntree)) + geom_point()
+p12 <- ggplot(pars1, aes(nquant, crps, colour = nodesize)) + geom_point()
+p13 <- ggplot(pars1, aes(nquant, crps, colour = mtry)) + geom_point()
+
+pdf("qrf_local_tuning_nQuant.pdf", width = 14, height = 14, pointsize = 12)
+grid.arrange(p1, p2, p3,
+             p11, p12, p13, 
+             p0, 
+             nrow = 3, ncol = 3)
+dev.off()
