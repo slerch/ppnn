@@ -16,18 +16,20 @@ library(lubridate)
 
 # train and eval dates (any date in date = valid date of fc and!)
 start_eval <- as.Date("2016-01-01 00:00", tz = "UTC")
-end_eval <- as.Date("2016-12-31 00:00", tz = "UTC") 
+end_eval <- as.Date("2016-12-31 00:00", tz = "UTC")
 
 # prepare evaluation data set for faster subsetting later on
 data_eval_all <- subset(data, date >= start_eval & date <= end_eval)
 
 end_train <- start_eval - days(2)
-start_train <- as.Date("2015-01-01 00:00", tz  = "UTC")
+start_train <- data$date[1]
 
 # prepare training data set collection for faster subsetting later on
 data_train_all <- subset(data, date >= start_train & date <= end_train)
+data_train_all <- data_train_all[complete.cases(data_train_all),] 
 
-qt_levels <- seq(1/6, 5/6, by = 1/6)
+nQ <- 10 # number of quantiles
+qt_levels <- seq(1/(nQ+1), nQ/(nQ+1), by = 1/(nQ+1))
 qts_save <- matrix(NA, nrow = nrow(data_eval_all), ncol = length(qt_levels))
 
 stations <- unique(data$station)
@@ -55,8 +57,11 @@ for(this_station in stations){
   
   # compute quantiles on evaluation data
   data_eval_thisstation <- subset(data_eval_all, station == this_station)
+  if(nrow(data_eval_thisstation) == 0){
+    next
+  }
   X_eval <- data_eval_thisstation[!(names(data_eval_thisstation) %in% c("obs", "date", "station"))]
-
+  
   grF_prediction <-   predict(grF_model,
                               X_eval,
                               quantiles = qt_levels)
@@ -74,9 +79,5 @@ dim(qts_save)[1] - length(ind_use)
 grf_crps <- crps_sample(y = data_eval_all$obs[ind_use],
                         dat = qts_save[ind_use,])
 
-summary(grf_crps) # mean 1.0942 (with 1/51 quantiles)
+summary(grf_crps) 
 
-## mean 0.9979 with qt_levels <- seq(1/11, 10/11, by = 1/11)
-## mean 1.0177 with 1/21 quantile steps
-## mean 1.0143 with 1/21 quantile steps, but default number of trees (2000)
-## mean XXX with 1/6 quantile steps
