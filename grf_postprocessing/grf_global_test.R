@@ -63,3 +63,8 @@ grf_crps <- crps_sample(y = data_eval_all$obs[ind_use],
                         dat = grF_prediction[ind_use,])
 
 summary(grf_crps)
+
+
+summary(grf_crps)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 0.1645  0.4452  0.6605  0.9892  1.1883 18.7127 
