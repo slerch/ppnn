@@ -140,9 +140,6 @@ dev.off()
 
 ## globalST
 
-
-## global
-
 rm(list=ls())
 
 Rdata_dir <- "/media/sebastian/Elements/Postproc_NN/model_data/boosting/"
@@ -182,25 +179,23 @@ pars <- subset(pars, link == "log")
 
 head(pars[with(pars, order(crps)), ])
 
-## station data actually not added...
+library(ggplot2)
+library(gridExtra)
 
-# library(ggplot2)
-# library(gridExtra)
-# 
-# ggplot(aes(y = crps, x = maxit), data = pars) + geom_point()
-# 
-# p11 <- ggplot(pars, aes(maxit, crps, colour = nu)) + geom_point()
-# p12 <- ggplot(pars, aes(maxit, crps, colour = mstop)) + geom_point()
-# 
-# p21 <- ggplot(pars, aes(nu, crps, colour = maxit)) + geom_point()
-# p22 <- ggplot(pars, aes(nu, crps, colour = mstop)) + geom_point()
-# 
-# p31 <- ggplot(pars, aes(mstop, crps, colour = maxit)) + geom_point()
-# p32 <- ggplot(pars, aes(mstop, crps, colour = nu)) + geom_point()
-# 
-# pdf("boosting_globalST_tuning.pdf", width = 2*5, height = 3*5, pointsize = 12)
-# grid.arrange(p11, p12, 
-#              p21, p22, 
-#              p31, p32, 
-#              nrow = 3, ncol = 2)
-# dev.off()
+ggplot(aes(y = crps, x = maxit), data = pars) + geom_point()
+
+p11 <- ggplot(pars, aes(maxit, crps, colour = nu)) + geom_point()
+p12 <- ggplot(pars, aes(maxit, crps, colour = mstop)) + geom_point()
+
+p21 <- ggplot(pars, aes(nu, crps, colour = maxit)) + geom_point()
+p22 <- ggplot(pars, aes(nu, crps, colour = mstop)) + geom_point()
+
+p31 <- ggplot(pars, aes(mstop, crps, colour = maxit)) + geom_point()
+p32 <- ggplot(pars, aes(mstop, crps, colour = nu)) + geom_point()
+
+pdf("boosting_globalST_tuning.pdf", width = 2*5, height = 3*5, pointsize = 12)
+grid.arrange(p11, p12,
+             p21, p22,
+             p31, p32,
+             nrow = 3, ncol = 2)
+dev.off()
