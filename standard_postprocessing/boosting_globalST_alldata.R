@@ -38,8 +38,10 @@ crch_model <- crch(obs ~ .|.,
                    data = data_train[,-which(names(data) %in% c("date", "station"))],
                    dist = "gaussian",
                    link.scale = "log",
+                   maxit = 1000,
+                   nu = 0.05,
+                   mstop = "max",
                    method = "boosting")
-
 
 eval_start <- as.Date("2016-01-01 00:00 UTC")
 eval_end <- as.Date("2016-12-31 00:00 UTC")
@@ -52,3 +54,5 @@ sc <- as.numeric(predict(crch_model, data_eval_all, type = "scale"))
 
 crps_boost <- crps_norm(y = data_eval_all$obs, mean = loc, sd = sc)
 summary(crps_boost)
+
+# 0.915

@@ -30,8 +30,10 @@ crch_model <- crch(obs ~ .|.,
                    data = data_train[,-which(names(data) %in% c("date", "station"))],
                    dist = "gaussian",
                    link.scale = "log",
-                   method = "boosting",
-                   mstop = "aic")
+                   maxit = 1000,
+                   nu = 0.05,
+                   mstop = "max",
+                   method = "boosting")
 
 
 eval_start <- as.Date("2016-01-01 00:00 UTC")
