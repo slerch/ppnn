@@ -81,3 +81,4 @@ grf_crps <- crps_sample(y = data_eval_all$obs[ind_use],
 
 summary(grf_crps) 
 
+## 0.8432 

@@ -47,3 +47,6 @@ sc <- as.numeric(predict(crch_model, data_eval_all, type = "scale"))
 
 crps_boost <- crps_norm(y = data_eval_all$obs, mean = loc, sd = sc)
 summary(crps_boost)
+
+
+# 0.962 

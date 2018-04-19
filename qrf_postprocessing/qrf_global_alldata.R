@@ -18,12 +18,10 @@ library(lubridate)
 start_eval <- as.Date("2016-01-01 00:00", tz = "UTC")
 end_eval <- as.Date("2016-12-31 00:00", tz = "UTC") 
 
-data_eval_all <- subset(data, date >= start_eval & date <= end_eval)
-
 end_train <- start_eval - hours(48)
-start_train <- as.Date("2015-01-01 00:00", tz = "UTC")
+start_train <- data$date[1]
 
-qt_levels <- seq(1/51, 50/51, by = 1/51)
+qt_levels <- seq(1/21, 20/21, by = 1/21)
 qts_save <- matrix(NA, 
                    nrow = nrow(data_eval_all), 
                    ncol = length(qt_levels))
@@ -35,19 +33,15 @@ data_eval <- subset(data, date >= start_eval & date <= end_eval)
 
 # model
 qrF_model <- quantregForest(x = data_train[, !(names(data_train) %in% c("date", "station", "obs"))], 
-                            y = data_train$obs)
+                            y = data_train$obs,
+                            ntree = 1000,
+                            nodesize = 5,
+                            mtry = 20,
+                            replace = TRUE)
 
 # compute quantiles on evaluation data
 qrF_prediction <-   predict(qrF_model,
                             newdata = data_eval[, !(names(data_train) %in% c("date", "station", "obs"))],
-                            what = qt_levels,
-                            all = TRUE)
-
-qt_levels <- seq(1/51, 50/51, by = 1/51)
-qts_save <- matrix(NA, nrow = nrow(data_eval), ncol = length(qt_levels))
-
-qrF_prediction <-   predict(qrF_model,
-                            data_eval,
                             what = qt_levels,
                             all = TRUE)
 
