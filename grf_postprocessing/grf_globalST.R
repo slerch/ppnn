@@ -31,7 +31,7 @@ start_train <- as.Date("2015-01-01 00:00", tz  = "UTC")
 
 # prepare training data set collection for faster subsetting later on
 data_train_all <- subset(data, date >= start_train & date <= end_train)
-# data_train_all <- data_train_all[complete.cases(data_train_all),] 
+data_train_all <- data_train_all[complete.cases(data_train_all),]
 
 # qt_levels <- seq(1/51, 50/51, by = 1/51)
 nQ <- 20 # number of quantiles
