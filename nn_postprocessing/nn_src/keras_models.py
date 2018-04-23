@@ -98,7 +98,7 @@ def build_hidden_model(n_features, n_outputs, hidden_nodes, compile=False,
 def build_emb_model(n_features, n_outputs, hidden_nodes, emb_size, max_id,
                     compile=False, optimizer='adam', lr=0.01,
                     loss=crps_cost_function,
-                    activation='relu'):
+                    activation='relu', reg=None):
     """
 
     Args:
@@ -125,8 +125,8 @@ def build_emb_model(n_features, n_outputs, hidden_nodes, emb_size, max_id,
     emb = Flatten()(emb)
     x = Concatenate()([features_in, emb])
     for h in hidden_nodes:
-        x = Dense(h, activation=activation)(x)
-    x = Dense(n_outputs, activation='linear')(x)
+        x = Dense(h, activation=activation, kernel_regularizer=reg)(x)
+    x = Dense(n_outputs, activation='linear', kernel_regularizer=reg)(x)
     model = Model(inputs=[features_in, id_in], outputs=x)
 
     if compile:
