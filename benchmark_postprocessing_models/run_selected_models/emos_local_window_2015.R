@@ -144,7 +144,7 @@ for(day_id in 1:length(eval_dates)){
 
 t2 <- Sys.time()
 t2-t1
-# run time ~ 56 minutes
+# run time ~ 10 minutes
 
 df_out <- data.frame(date = data_eval_all$date,
                      station_id = data_eval_all$station,
