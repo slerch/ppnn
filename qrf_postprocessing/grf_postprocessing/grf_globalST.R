@@ -8,7 +8,7 @@ load(paste0(data_dir, "data_all_stationInfo.Rdata"))
 
 data$station_alt <- station_alt
 data$station_orog <- station_orog
-data$station_lsm <- station_lsm
+data$station_lsm <- as.numeric(station_lsm) # needs to be converted to avoid errors in grf function due to factor
 rm(station_alt, station_orog, station_lsm)
 
 ## ignore sm_mean and sm_var due to missing and NA values leading to problems in estimation
@@ -61,10 +61,3 @@ grF_model <- quantile_forest(X_train,
 #                         dat = grF_prediction[ind_use,])
 # 
 # summary(grf_crps)
-
-##
-## ?????
-##
-# 
-# Fehler in quantile_train(quantiles, regression.splitting, data$default,  : 
-#                            Not compatible with requested type: [type=character; target=double].
