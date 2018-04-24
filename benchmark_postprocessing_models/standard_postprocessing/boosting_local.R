@@ -32,8 +32,6 @@ data_eval_all <- subset(data, date >= eval_start & date <= eval_end)
 
 ## -------------- model estimation --------------  ##
 
-## standard model without any boosting
-
 loc_save <- numeric(nrow(data_eval_all))
 sc_save <- numeric(nrow(data_eval_all))
 
