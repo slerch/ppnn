@@ -12,9 +12,7 @@ rm(list=ls())
 
 data_dir <- "/media/sebastian/Elements/Postproc_NN/data/"
 load(paste0(data_dir, "data_all.Rdata"))
-
 data <- data[, -which(!(names(data) %in% c("obs", "date", "station", "t2m_mean", "t2m_var")))]
-head(data)
 
 library(scoringRules)
 library(lubridate)
@@ -53,7 +51,6 @@ eval_end <- as.Date("2016-12-31 00:00 UTC")
 eval_dates <- seq(eval_start, eval_end, by = "1 day")
 
 data_eval_all <- subset(data, date >= eval_start & date <= eval_end)
-
 
 t1 <- Sys.time()
 optim_out <- optim(par = c(1,1,1,1), 
