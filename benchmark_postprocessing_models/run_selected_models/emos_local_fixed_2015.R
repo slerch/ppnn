@@ -46,7 +46,7 @@ stations_list <- unique(data$station)
 train_end <- as.Date("2016-01-01 00:00 UTC") - days(2)
 train_start <- as.Date("2015-01-01 00:00 UTC") 
 
-data_train_dates <- subset(data, date >= train_start & date <= train_end)
+data_train_all <- subset(data, date >= train_start & date <= train_end)
 
 eval_start <- as.Date("2016-01-01 00:00 UTC")
 eval_end <- as.Date("2016-12-31 00:00 UTC")
@@ -54,17 +54,17 @@ eval_dates <- seq(eval_start, eval_end, by = "1 day")
 
 data_eval_all <- subset(data, date >= eval_start & date <= eval_end)
 
-out_loc <- NULL
-out_sc <- NULL
-
 t1 <- Sys.time()
+
+out_loc <- rep(NA, nrow(data_eval_all))
+out_sc <- rep(NA, nrow(data_eval_all))
 
 par_out <- matrix(NA, ncol = 4, nrow = length(stations_list))
 
 for(this_station in stations_list){
   if(which(stations_list == this_station) %% 10 == 0){print(which(stations_list == this_station))}
   
-  data_train <- subset(data_train_dates, station == this_station)
+  data_train <- subset(data_train_all, station == this_station)
   
   # remove incomplete cases (= NA obs or fc)
   data_train <- data_train[complete.cases(data_train), ]
@@ -89,50 +89,23 @@ for(this_station in stations_list){
   }
   
   par_out[which(stations_list == this_station), ] <- optim_out$par
-}
-
-
-for(day_id in 1:length(eval_dates)){
   
-  today <- eval_dates[day_id]
-  data_eval_today <- subset(data_eval_all, date == today)
+  data_eval <- subset(data_eval_all, station == this_station)
   
-  # progress indicator
-  if(day(as.Date(today)) == 1){
-    cat("Starting at", paste(Sys.time()), ":", as.character(today), "\n"); flush(stdout())
-  }
-  
-  # out of sample distribution parameters for today
-  loc <- rep(NA, length(stations_list))
-  sc <- rep(NA, length(stations_list))
-  for(this_station in stations_list){
-    ind_st <- which(stations_list == this_station)
-    # print(ind_st)
-    data_eval <- subset(data_eval_today, station == this_station)
-    if(!is.finite(data_eval$obs)){next}
-    loc_st <- c(cbind(1, data_eval$t2m_mean) %*% par_out[ind_st,1:2])
-    scsquared_tmp <- c(cbind(1, data_eval$t2m_var) %*% par_out[ind_st,3:4])
-    if(is.na(scsquared_tmp)){
-      next
-    }
-    if(scsquared_tmp <= 0){
-      print("negative scale, taking absolute value")
-      sc_st <- sqrt(abs(scsquared_tmp))
-    } else{
-      sc_st <- sqrt(scsquared_tmp)
-    }
-    loc[ind_st] <- loc_st
-    sc[ind_st] <- sc_st
-  }
+  loc_st <- c(cbind(1, data_eval$t2m_mean) %*% optim_out$par[1:2])
+  scsquared_tmp <- c(cbind(1, data_eval$t2m_var) %*% optim_out$par[3:4])
+  sc_st <- sqrt(abs(scsquared_tmp))
   
   # save parameters
-  out_loc <- c(out_loc, loc)
-  out_sc <- c(out_sc, sc)
+  ind_this_station <- which(data_eval_all$station == this_station)
+  
+  out_loc[ind_this_station] <- loc_st 
+  out_sc[ind_this_station] <- sc_st
 }
 
 t2 <- Sys.time()
 t2-t1
-# run time ~ 52 seconds
+# run time ~ 5 seconds
 
 df_out <- data.frame(date = data_eval_all$date,
                      station_id = data_eval_all$station,

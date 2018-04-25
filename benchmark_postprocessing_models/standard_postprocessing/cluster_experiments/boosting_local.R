@@ -38,8 +38,8 @@ run_boosting <- function(maxit, nu, mstop, linkfc){
                      ".Rout")
   sink(Routname)
   
-  loc_save <- numeric(nrow(data_eval_all))
-  sc_save <- numeric(nrow(data_eval_all))
+  loc_save <- rep(NA, nrow(data_eval_all))
+  sc_save <- rep(NA, nrow(data_eval_all))
   
   stations_list <- unique(data$station)
   

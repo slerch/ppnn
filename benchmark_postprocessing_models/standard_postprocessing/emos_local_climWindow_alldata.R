@@ -151,6 +151,7 @@ data_eval_all <- subset(data, date >= eval_start & date <= eval_end)
 for(day_id in 1:length(eval_dates)){
   
   today <- eval_dates[day_id]
+  data_today <- subset(data_eval_all, date == today)
   
   # progress indicator
   if(day(as.Date(today)) == 1){
@@ -166,7 +167,7 @@ for(day_id in 1:length(eval_dates)){
   for(this_station in stations_list){
     ind_st <- which(stations_list == this_station)
     # print(ind_st)
-    data_eval <- subset(data_eval_all, date == today & station == this_station)
+    data_eval <- subset(data_today, station == this_station)
     if(!is.finite(data_eval$obs)){next}
     loc_st <- c(cbind(1, data_eval$t2m_mean) %*% par_out[ind_st,1:2])
     scsquared_tmp <- c(cbind(1, data_eval$t2m_var) %*% par_out[ind_st,3:4])
