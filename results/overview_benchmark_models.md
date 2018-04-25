@@ -13,11 +13,11 @@
 | EMOS + boosting | local | 0.85 | 14 |
 | QRF   | local           | 0.95 |  8 |
 | ---   | ---   | --- |  --- |
-| Linear network | fc     | 1.01 | |
-|       | fc_aux          | 0.92 | |
-|       | fc_emb          | 0.91 | |
-|       | fc_aux_emb      | 0.87 | |
-| Neural network | nn_aux_emb | 0.82 | |
+| Linear network | fc     | 1.01 | 0.2 |
+|       | fc_aux          | 0.92 | 0.7 |
+|       | fc_emb          | 0.91 | 0.8 |
+|       | fc_aux_emb      | 0.88 | 0.8 |
+| Neural network | nn_aux_emb | 0.82 | 9 |
 
 ### Training 2007-2015
 
@@ -29,3 +29,9 @@
 |       | (local, window) | (0.88) | (45) |
 | EMOS + boosting | local  | 0.82 |  48 |
 | QRF   | local   |   |   |
+| Linear network | fc     | 1.01 | 1 |
+|       | fc_aux          | 0.91 | 2 |
+|       | fc_emb          | 0.91 | 3 |
+|       | fc_aux_emb      | 0.87 | 3 |
+| Neural network | nn_aux | 0.87 | 25 |
+|  | nn_aux_emb | 0.78 | 16 |
