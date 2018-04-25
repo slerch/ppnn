@@ -643,3 +643,23 @@ def plot_fc(data_set, idx, distr='pdf', preds=None):
     plt.xlabel('Temperature [C]')
     plt.legend()
     plt.show()
+
+
+def get_datasets(data_dir, pickled_name, train_dates, test_dates=['2016-01-01', '2017-01-01'], 
+                 aux=False, reload=False):
+    pickle_fn = f'{data_dir}pickled/{pickled_name}'
+    if not os.path.exists(pickle_fn) or reload:
+        var_dict = aux_dict if aux else None
+        train_set, test_set = get_train_test_sets(
+            data_dir,
+            train_dates,
+            test_dates,
+            aux_dict=var_dict,
+        )
+        # Save pickled dataset
+        with open(pickle_fn, 'wb') as f:
+            pickle.dump((train_set, test_set), f)
+    else:
+        with open(pickle_fn, 'rb') as f:
+            train_set, test_set = pickle.load(f)
+    return train_set, test_set
