@@ -96,5 +96,7 @@ df_out <- data.frame(date = data_eval_all$date,
                      qrf_pred)
 str(df_out)
 
-save(qrf_pred,
+qrf_pred_2015 <- df_out
+
+save(qrf_pred_2015,
      file = "/home/sebastian/Projects/PP_NN/code/results/Rdata_files/qrf_local_2015.Rdata")
