@@ -116,4 +116,4 @@ df_crps <- df_crps_withNAs[complete.cases(df_crps_withNAs),]
 
 apply(df_crps[,4:ncol(df_crps)], 2, function(x) sum(is.na(x)))
 apply(df_crps[,4:ncol(df_crps)], 2, mean)
-
+round(apply(df_crps[,4:ncol(df_crps)], 2, mean),2)

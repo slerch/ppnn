@@ -63,38 +63,14 @@ optim_out <- optim(par = c(1,1,1,1),
 
 par_out <- optim_out$par
 
-out_loc <- NULL
-out_sc <- NULL
-
-for(day_id in 1:length(eval_dates)){
-  
-  today <- eval_dates[day_id]
-  
-  # progress indicator
-  if(day(as.Date(today)) == 1){
-    cat("Starting at", paste(Sys.time()), ":", as.character(today), "\n"); flush(stdout())
-  }
-  
-  # out of sample distribution parameters for today
-  data_eval <- subset(data, date == today)
-  loc <- c(cbind(1, data_eval$t2m_mean) %*% par_out[1:2])
-  scsquared_tmp <- c(cbind(1, data_eval$t2m_var) %*% par_out[3:4])
-  if(any(scsquared_tmp <= 0)){
-    print("negative scale, taking absolute value")
-    sc <- sqrt(abs(scsquared_tmp))
-  } else{
-    sc <- sqrt(scsquared_tmp)
-  }
-  
-  # save parameters
-  out_loc <- c(out_loc, loc)
-  out_sc <- c(out_sc, sc)
-}
+out_loc <- c(cbind(1, data_eval_all$t2m_mean) %*% par_out[1:2])
+scsquared_tmp <- c(cbind(1, data_eval_all$t2m_var) %*% par_out[3:4])
+out_sc <- sqrt(abs(scsquared_tmp))
 
 t2 <- Sys.time()
 
 t2-t1
-# run time ~ 45 seconds
+# run time ~ 1.5 seconds
 
 df_out <- data.frame(date = data_eval_all$date,
                      station_id = data_eval_all$station,
