@@ -8,10 +8,10 @@
 | :--- |:-------------| :-----:| :-----:|
 | EMOS  | global          | 1.01 | 0.03 |
 |       | (global, window)| (1.00) | (3) |
-|       | local           | 0.90 | 0.85 |
+|       | local           | 0.90 | 0.1 |
 |       | (local, window) | (0.90) | (10) |
 | EMOS + boosting | local | 0.85 | 14 |
-| QRF   | local           | 0.95 |  28 |
+| QRF   | local           | 0.95 |  8 |
 | ---   | ---   | --- |  --- |
 | Linear network | fc     | 1.01 | |
 |       | fc_aux          | 0.92 | |

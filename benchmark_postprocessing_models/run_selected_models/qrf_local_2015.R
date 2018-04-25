@@ -29,6 +29,8 @@ data_eval_all <- subset(data, date >= start_eval & date <= end_eval)
 end_train <- start_eval - hours(48)
 start_train <- as.Date("2015-01-01 00:00", tz  = "UTC")
 
+data_train_all <- subset(data, date >= start_train & date <= end_train )
+
 # quantile levels
 qt_levels <- seq(1/51, 50/51, by = 1/51)
 qts_save <- matrix(NA, 
@@ -46,13 +48,11 @@ for(this_station in stations){
     cat(progind, "of", length(stations), "started at", paste(Sys.time()), "\n")
   }
   
-  data_train <- subset(data,
-                       date >= start_train & date <= end_train & station == this_station)
+  data_train <- subset(data_train_all, station == this_station)
   
   data_train <- data_train[complete.cases(data_train),]
   
-  data_eval <- subset(data,
-                      date >= start_eval & date <= end_eval & station == this_station)
+  data_eval <- subset(data_eval_all, station == this_station)
   # need to delete cases with NA obs in eval data to avoid error in qrf package
   # (even though not needed in predict function...)
   data_eval$obs <- NULL
