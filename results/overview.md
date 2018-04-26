@@ -28,7 +28,8 @@
 |       | local | 0.90 | 1 |
 |       | (local, window) | (0.88) | (45) |
 | EMOS + boosting | local  | 0.82 |  48 |
-| QRF   | local   |   |   |
+| QRF   | local   |  0.81 | 430  |
+| ---   | ---   | --- |  --- |
 | Linear network | fc     | 1.01 | 1 |
 |       | fc_aux          | 0.91 | 2 |
 |       | fc_emb          | 0.91 | 3 |
