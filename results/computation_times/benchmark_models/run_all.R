@@ -31,11 +31,12 @@ rm(list=setdiff(ls(), c("dir", "data",
 
 # Boosting, will take around 15 minutes
 source(paste0(dir, "R_scripts/boosting_2015.R"))
+time_bst_15 <- time_elapsed
 rm(list=setdiff(ls(), c("dir", "data", 
                         "time_emos_global_15", "time_emos_local_15", 
                         "time_bst_15")))
 
-# QRF, will take around 8 minutes
+# QRF, will take around 8 (or 20?) minutes
 source(paste0(dir, "R_scripts/qrf_2015.R"))
 time_qrf_15 <- time_elapsed
 rm(list=setdiff(ls(), c("dir", "data", 
