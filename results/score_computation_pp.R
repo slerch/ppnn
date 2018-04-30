@@ -241,6 +241,10 @@ fc_aux_emb_0715 <- read.csv(paste0(csv_dir, "fc_aux_emb_07-15.csv"))
 # drop un-used names
 fc_aux_emb_0715[,!(names(fc_aux_emb_0715) %in% names_keep)] <- NULL
 
+nn_aux_0715 <- read.csv(paste0(csv_dir, "nn_aux_07-15.csv"))
+# drop un-used names
+nn_aux_0715[,!(names(nn_aux_0715) %in% names_keep)] <- NULL
+
 nn_aux_emb_0715 <- read.csv(paste0(csv_dir, "nn_aux_emb_07-15.csv"))
 # drop un-used names
 nn_aux_emb_0715[,!(names(nn_aux_emb_0715) %in% names_keep)] <- NULL
@@ -292,6 +296,7 @@ df_crps$fc_0715 <- crps_norm(data_eval$obs, fc_0715$mean, fc_0715$std)
 df_crps$fc_aux_0715 <- crps_norm(data_eval$obs, fc_aux_0715$mean, fc_aux_0715$std)
 df_crps$fc_emb_0715 <- crps_norm(data_eval$obs, fc_emb_0715$mean, fc_emb_0715$std)
 df_crps$fc_aux_emb_0715 <- crps_norm(data_eval$obs, fc_aux_emb_0715$mean, fc_aux_emb_0715$std)
+df_crps$nn_aux <- crps_norm(data_eval$obs, nn_aux_0715$mean, nn_aux_0715$std)
 df_crps$nn_aux_emb_0715 <- crps_norm(data_eval$obs, nn_aux_emb_0715$mean, nn_aux_emb_0715$std)
 
 apply(df_crps[,4:ncol(df_crps)], 2, mean, na.rm = TRUE)
@@ -346,6 +351,7 @@ df_ae$fc_0715 <- ae_norm(data_eval$obs, fc_0715$mean, fc_0715$std)
 df_ae$fc_aux_0715 <- ae_norm(data_eval$obs, fc_aux_0715$mean, fc_aux_0715$std)
 df_ae$fc_emb_0715 <- ae_norm(data_eval$obs, fc_emb_0715$mean, fc_emb_0715$std)
 df_ae$fc_aux_emb_0715 <- ae_norm(data_eval$obs, fc_aux_emb_0715$mean, fc_aux_emb_0715$std)
+df_ae$nn_aux_0715 <- ae_norm(data_eval$obs, nn_aux_0715$mean, nn_aux_0715$std)
 df_ae$nn_aux_emb_0715 <- ae_norm(data_eval$obs, nn_aux_emb_0715$mean, nn_aux_emb_0715$std)
 
 apply(df_ae[,4:ncol(df_ae)], 2, mean, na.rm = TRUE)
@@ -384,6 +390,7 @@ df_pit$fc_0715 <- pnorm(data_eval$obs, fc_0715$mean, fc_0715$std)
 df_pit$fc_aux_0715 <- pnorm(data_eval$obs, fc_aux_0715$mean, fc_aux_0715$std)
 df_pit$fc_emb_0715 <- pnorm(data_eval$obs, fc_emb_0715$mean, fc_emb_0715$std)
 df_pit$fc_aux_emb_0715 <- pnorm(data_eval$obs, fc_aux_emb_0715$mean, fc_aux_emb_0715$std)
+df_pit$nn_aux_0715 <- pnorm(data_eval$obs, nn_aux_0715$mean, nn_aux_0715$std)
 df_pit$nn_aux_emb_0715 <- pnorm(data_eval$obs, nn_aux_emb_0715$mean, nn_aux_emb_0715$std)
 
 # benchmark models
