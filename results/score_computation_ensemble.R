@@ -28,7 +28,7 @@ load("CRPS_AE_PIT_all.Rdata")
 df_res_ens <- data_eval[noNA_cases_training15, 1:3]
 df_res_ens$crps <- crps_ens[noNA_cases_training15]
 df_res_ens$vrh <- vrh_ens[noNA_cases_training15]
-df_res_ens$ae <- vrh_ens[noNA_cases_training15]
+df_res_ens$ae <- ae_ens[noNA_cases_training15]
 
 save(df_res_ens,
      file = "CRPS_AE_PIT_ens.Rdata")
