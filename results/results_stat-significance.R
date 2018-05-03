@@ -90,11 +90,17 @@ for(m1 in 1:nmod){
 
 freq_raw_15 <- freq_raw
 freq_BH_15 <- freq_BH 
-df_BH <- data.frame(100*round(freq_BH_15, 3))
-names(df_BH) <- models_15
-rownames(df_BH) <- models_15
-df_BH
+df_BH_15 <- data.frame(100*freq_BH_15)
+names(df_BH_15) <- models_15
+rownames(df_BH_15) <- models_15
+df_BH_15
 
+desired_order <- c("ens", "emos_gl_15", "emos_loc_15", "bst_15", "qrf_15",
+                   "fc_15", "fc_aux_15", "fc_emb_15", "fc_aux_emb_15", "nn_aux_emb_15")
+df_BH_15[desired_order,desired_order]
+
+library(xtable)
+xtable(df_BH_15[desired_order,desired_order], digits = 1)
 
 ## ---------- 2007-2015 training ---------- ##
 
@@ -176,7 +182,14 @@ for(m1 in 1:nmod){
 
 freq_raw_0715 <- freq_raw
 freq_BH_0715 <- freq_BH 
-df_BH <- data.frame(100*round(freq_BH_0715, 3))
-names(df_BH) <- models_0715
-rownames(df_BH) <- models_0715
-df_BH
+df_BH_0715 <- data.frame(100*freq_BH_0715)
+names(df_BH_0715) <- models_0715
+rownames(df_BH_0715) <- models_0715
+df_BH_0715
+
+desired_order <- c("ens", "emos_gl_0715", "emos_loc_0715", "bst_0715", "qrf_0715",
+                   "fc_0715", "fc_aux_0715", "fc_emb_0715", "fc_aux_emb_0715", "nn_aux", "nn_aux_emb_0715")
+df_BH_0715[desired_order,desired_order]
+
+library(xtable)
+xtable(df_BH_0715[desired_order,desired_order], digits = 1)

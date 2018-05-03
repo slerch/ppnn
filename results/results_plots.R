@@ -129,7 +129,7 @@ boxplot(df_crpss_ens_15[,5:13], main = "Training 2015", ylim = plotlim,
         pch = 20, cex = 0.5, axes = FALSE,
         ylab = "Mean CRPSS")
 axis(2)
-axis(1, at = 1:9, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-boost", "QRF"))
+axis(1, at = 1:9, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-bst", "QRF"))
 # box()
 abline(h=0, lty =2)
 
@@ -137,7 +137,7 @@ boxplot(df_crpss_ens_0715[,5:14], main = "Training 2007-2015", ylim = plotlim,
         pch = 20, cex = 0.5, axes = FALSE,
         ylab = "Mean CRPSS")
 axis(2)
-axis(1, at = 1:10, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-boost", "QRF"))
+axis(1, at = 1:10, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-bst", "QRF"))
 # box()
 abline(h=0, lty =2)
 dev.off()
@@ -180,7 +180,7 @@ boxplot(df_crpss_emosloc_15[,5:13], main = "Training 2015", ylim = plotlim,
         pch = 20, cex = 0.5, axes = FALSE,
         ylab = "Mean CRPSS")
 axis(2)
-axis(1, at = 1:9, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux-emb", "EMOS-gl", "EMOS-loc-boost", "QRF", "Ensemble"))
+axis(1, at = 1:9, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux-emb", "EMOS-gl", "EMOS-loc-bst", "QRF", "Ensemble"))
 # box()
 abline(h=0, lty =2)
 
@@ -188,7 +188,7 @@ boxplot(df_crpss_emosloc_0715[,5:14], main = "Training 2007-2015", ylim = plotli
         pch = 20, cex = 0.5, axes = FALSE,
         ylab = "Mean CRPSS")
 axis(2)
-axis(1, at = 1:10, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "EMOS-gl", "EMOS-loc-boost", "QRF", "Ensemble"))
+axis(1, at = 1:10, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "EMOS-gl", "EMOS-loc-bst", "QRF", "Ensemble"))
 # box()
 abline(h=0, lty =2)
 
@@ -284,7 +284,7 @@ boxplot(df_crpss_qrf_15[,5:13], main = "Training 2015", ylim = plotlim,
         pch = 20, cex = 0.5, axes = FALSE,
         ylab = "Mean CRPSS")
 axis(2)
-axis(1, at = 1:9, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-boost", "Ensemble"))
+axis(1, at = 1:9, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-bst", "Ensemble"))
 # box()
 abline(h=0, lty =2)
 
@@ -292,7 +292,7 @@ boxplot(df_crpss_qrf_0715[,5:14], main = "Training 2007-2015", ylim = plotlim,
         pch = 20, cex = 0.5, axes = FALSE,
         ylab = "Mean CRPSS")
 axis(2)
-axis(1, at = 1:10, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-boost", "Ensemble"))
+axis(1, at = 1:10, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-bst", "Ensemble"))
 # box()
 abline(h=0, lty =2)
 
@@ -316,16 +316,6 @@ for(i in 1:length(fcnames)){
 }
 
 
-# par(mfrow=c(1,2))
-# plotlim <- range(c(df_crpss_nn_aux_emb_15[,5:13]), df_crpss_nn_aux_emb_0715[,5:14])
-# plotlim <- c(-1,max(plotlim))
-# 
-# boxplot(df_crpss_nn_aux_emb_15[,5:13], main = "Training 2015", ylim = plotlim)
-# abline(h=0, lty =2)
-# boxplot(df_crpss_nn_aux_emb_0715[,5:14], main = "Training 2007-2015", ylim = plotlim)
-# abline(h=0, lty =2)
-
-
 pdf("CRPSS_nn-aux-emb.pdf", width = ww, height = hh, pointsize = ps)
 
 par(mfrow=c(1,2), 
@@ -338,7 +328,7 @@ boxplot(df_crpss_nn_aux_emb_15[,5:13], main = "Training 2015", ylim = plotlim,
         pch = 20, cex = 0.5, axes = FALSE,
         ylab = "Mean CRPSS")
 axis(2)
-axis(1, at = 1:9, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb",  "EMOS-gl", "EMOS-loc", "EMOS-loc-boost", "QRF", "Ensemble"))
+axis(1, at = 1:9, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb",  "EMOS-gl", "EMOS-loc", "EMOS-loc-bst", "QRF", "Ensemble"))
 # box()
 abline(h=0, lty =2)
 
@@ -346,7 +336,7 @@ boxplot(df_crpss_nn_aux_emb_0715[,5:14], main = "Training 2007-2015", ylim = plo
         pch = 20, cex = 0.5, axes = FALSE,
         ylab = "Mean CRPSS")
 axis(2)
-axis(1, at = 1:10, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux", "EMOS-gl", "EMOS-loc", "EMOS-loc-boost", "QRF", "Ensemble"))
+axis(1, at = 1:10, labels = c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux", "EMOS-gl", "EMOS-loc", "EMOS-loc-bst", "QRF", "Ensemble"))
 # box()
 abline(h=0, lty =2)
 
@@ -357,7 +347,7 @@ dev.off()
 
 ## ---------- plot of best model by station ---------- ##
 
-df_best_15 <- df_best_0715 <- df_stat[,1:3]
+df_best_15 <- df_best_0715 <- df_stat_15[,1:3]
 df_best_15$model <- NA
 df_best_0715$model <- NA
 df_best_15$diff_to_2nd <- NA
@@ -399,6 +389,133 @@ allmodels_0715 <- names(df_crps_0715)[4:ncol(df_crps_0715)]
 allmodels_15 <- names(df_crps_15)[4:ncol(df_crps_15)]
 mypal <- rainbow_hcl(length(allmodels_0715))
 
+## old:
+
+# mypal_use <- c("fc_15" = mypal[1],
+#                "fc_aux_15" = mypal[9],
+#                "fc_emb_15" = mypal[3],
+#                "fc_aux_emb_15" = mypal[4],
+#                "nn_aux_15" = mypal[5],
+#                "nn_aux_emb_15" = mypal[8],
+#                "emos_gl_15" = mypal[6],
+#                "emos_loc_15" = mypal[7],
+#                "bst_15" = mypal[2],
+#                "qrf_15" = mypal[10])
+# 
+# p <- ggmap(map)
+# p <- p + geom_point(data = df_best_15_noNA, aes(x = lon, y = lat, color = model), size=ps_plot)
+# p <- p + scale_x_continuous(limits = range(df_best_15_noNA$lon)) +
+#   scale_y_continuous(limits = range(df_best_15_noNA$lat)+ c(0,-0.17))
+# p <- p + xlab("Longitude") + ylab("Latitude")
+# p <- p + scale_colour_manual(values = mypal_use, name = "Best model",
+#                              labels = c("EMOS-loc-bst", "EMOS-gl", "EMOS-loc", "FCN-aux", "FCN-aux-emb", "FC-emb", "NN-aux", "NN-aux-emb", "QRF"),
+#                              limits = c("bst_15", "emos_gl_15", "emos_loc_15", "fc_aux_15", "fc_aux_emb_15",  "fc_emb_15", "nn_aux_15",   "nn_aux_emb_15", "qrf_15"))
+# p1 <- p
+# 
+# mypal_use <- c("fc_0715" = mypal[1],
+#                "fc_aux_0715" = mypal[9],
+#                "fc_emb_0715" = mypal[3],
+#                "fc_aux_emb_0715" = mypal[4],
+#                "nn_aux" = mypal[5],
+#                "nn_aux_emb_0715" = mypal[8],
+#                "emos_gl_0715" = mypal[6],
+#                "emos_loc_0715" = mypal[7],
+#                "bst_0715" = mypal[2],
+#                "qrf_0715" = mypal[10])
+# 
+# p <- ggmap(map)
+# p <- p + geom_point(data = df_best_0715_noNA, aes(x = lon, y = lat, color = model), size=ps_plot)
+# p <- p + scale_x_continuous(limits = range(df_best_0715_noNA$lon)) +
+#   scale_y_continuous(limits = range(df_best_0715_noNA$lat)+ c(0,-0.17))
+# p <- p + xlab("Longitude") + ylab("Latitude")
+# p <- p + scale_colour_manual(values = mypal_use, name = "Best model",
+#                              labels = c("EMOS-loc-bst", "EMOS-loc", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "QRF"))
+# p2 <- p
+# 
+# g_legend<-function(a.gplot){
+#   tmp <- ggplot_gtable(ggplot_build(a.gplot))
+#   leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+#   legend <- tmp$grobs[[leg]]
+#   legend
+# }
+# 
+# legend <- g_legend(p1)
+# 
+# pdf("mapplot_bestmodel_v0.pdf", width = 10, height = 5, pointsize = 12)
+# grid.arrange(p1 + theme(legend.position = 'none', plot.title = element_text(hjust = 0.5)) + ggtitle("Training 2015"),
+#              p2 + theme(legend.position = 'none', plot.title = element_text(hjust = 0.5)) + ggtitle("Training 2007-2015"),
+#              legend,
+#              ncol=3, nrow=1, widths=c(3/7,3/7,1/7))
+# dev.off()
+# 
+# ## alternative, with individual legends:
+# 
+# mypal <- rainbow_hcl(length(allmodels_0715))
+# mypal_use <- c("fc_15" = mypal[1], 
+#                "fc_aux_15" = mypal[9], 
+#                "fc_emb_15" = mypal[3], 
+#                "fc_aux_emb_15" = mypal[4], 
+#                "nn_aux_15" = mypal[5], 
+#                "nn_aux_emb_15" = mypal[8], 
+#                "emos_gl_15" = mypal[6], 
+#                "emos_loc_15" = mypal[7], 
+#                "bst_15" = mypal[2],
+#                "qrf_15" = mypal[10])
+# 
+# p <- ggmap(map)
+# p <- p + geom_point(data = df_best_15_noNA, aes(x = lon, y = lat, color = model), size=ps_plot)
+# p <- p + scale_x_continuous(limits = range(df_plot$lon)) +
+#   scale_y_continuous(limits = range(df_plot$lat)+ c(0,-0.17))
+# p <- p + xlab("Longitude") + ylab("Latitude")
+# p <- p + scale_colour_manual(values = mypal_use, name = "Best model",
+#                              labels = c("EMOS-loc-bst", "EMOS-gl", "EMOS-loc", "FCN-aux", "FCN-aux-emb", "FC-emb", "NN-aux-emb", "QRF"))
+# p <- p + ggtitle("Training 2015")  +
+#   theme(plot.title = element_text(hjust = 0.5))
+# p1 <- p
+# 
+# mypal_use <- c("fc_0715" = mypal[1], 
+#                "fc_aux_0715" = mypal[9], 
+#                "fc_emb_0715" = mypal[3], 
+#                "fc_aux_emb_0715" = mypal[4], 
+#                "nn_aux" = mypal[5], 
+#                "nn_aux_emb_0715" = mypal[8], 
+#                "emos_gl_0715" = mypal[6], 
+#                "emos_loc_0715" = mypal[7], 
+#                "bst_0715" = mypal[2],
+#                "qrf_0715" = mypal[10])
+# 
+# p <- ggmap(map)
+# p <- p + geom_point(data = df_best_0715_noNA, aes(x = lon, y = lat, color = model), size=ps_plot)
+# p <- p + scale_x_continuous(limits = range(df_plot$lon)) +
+#   scale_y_continuous(limits = range(df_plot$lat)+ c(0,-0.17))
+# p <- p + xlab("Longitude") + ylab("Latitude")
+# p <- p + scale_colour_manual(values = mypal_use, name = "Best model",
+#                              labels = c("EMOS-loc-bst", "EMOS-loc", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "QRF"))
+# p <- p + ggtitle("Training 2007-2015")  +
+#   theme(plot.title = element_text(hjust = 0.5))
+# p2 <- p
+# 
+# g_legend<-function(a.gplot){
+#   tmp <- ggplot_gtable(ggplot_build(a.gplot))
+#   leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+#   legend <- tmp$grobs[[leg]]
+#   legend
+# }
+# 
+# legend1 <- g_legend(p1)
+# legend2 <- g_legend(p2)
+# 
+# pdf("mapplot_bestmodel_v1.pdf", width = 10, height = 5, pointsize = 12)
+# grid.arrange(p1 + theme(legend.position = 'none'),
+#              legend1,            
+#              p2 + theme(legend.position = 'none'),
+#              legend2,
+#              ncol=4, nrow=1, widths=c(2/8,1/8,2/8,1/8))
+# dev.off()
+
+## version with point shape indicating model type
+## may require line-by-line reruns
+
 mypal_use <- c("fc_15" = mypal[1],
                "fc_aux_15" = mypal[9],
                "fc_emb_15" = mypal[3],
@@ -410,15 +527,36 @@ mypal_use <- c("fc_15" = mypal[1],
                "bst_15" = mypal[2],
                "qrf_15" = mypal[10])
 
+myshapes_use <- c("fc_15" = 15,
+                  "fc_aux_15" = 15,
+                  "fc_emb_15" = 15,
+                  "fc_aux_emb_15" = 15,
+                  "nn_aux_15" = 19,
+                  "nn_aux_emb_15" = 19,
+                  "emos_gl_15" = 2,
+                  "emos_loc_15" = 2,
+                  "bst_15" = 17,
+                  "qrf_15" = 4) # 18
+
+mylabels <- c("EMOS-gl", "EMOS-loc", "EMOS-loc-bst", "QRF" ,"FCN-aux", "FCN-emb", "FCN-aux-emb",  "NN-aux", "NN-aux-emb")
+mybreaks <- c("emos_gl_15", "emos_loc_15", "bst_15", "qrf_15", "fc_aux_15", "fc_emb_15", "fc_aux_emb_15",   "nn_aux_15",   "nn_aux_emb_15")
 p <- ggmap(map)
-p <- p + geom_point(data = df_best_15_noNA, aes(x = lon, y = lat, color = model), size=ps_plot)
-p <- p + scale_x_continuous(limits = range(df_plot$lon)) +
-  scale_y_continuous(limits = range(df_plot$lat)+ c(0,-0.17))
+p <- p + geom_point(data = df_best_15_noNA, 
+                    aes(x = lon, y = lat, color = model, shape = model), 
+                    size=ps_plot)
+p <- p + scale_shape_manual(values=myshapes_use,
+                            labels = mylabels,
+                            limits = mybreaks,
+                            name = "Best model")
+p <- p + scale_colour_manual(values = mypal_use, 
+                             labels = mylabels,
+                             limits = mybreaks,
+                             name = "Best model")
+p <- p + scale_x_continuous(limits = range(df_best_15_noNA$lon)) +
+  scale_y_continuous(limits = range(df_best_15_noNA$lat)+ c(0,-0.17))
 p <- p + xlab("Longitude") + ylab("Latitude")
-p <- p + scale_colour_manual(values = mypal_use, name = "Best model",
-                             labels = c("EMOS-loc-boost", "EMOS-gl", "EMOS-loc", "FCN-aux", "FCN-aux-emb", "FC-emb", "NN-aux", "NN-aux-emb", "QRF"),
-                             limits = c("bst_15", "emos_gl_15", "emos_loc_15", "fc_aux_15", "fc_aux_emb_15",  "fc_emb_15", "nn_aux_15",   "nn_aux_emb_15", "qrf_15"))
 p1 <- p
+
 
 mypal_use <- c("fc_0715" = mypal[1],
                "fc_aux_0715" = mypal[9],
@@ -431,13 +569,36 @@ mypal_use <- c("fc_0715" = mypal[1],
                "bst_0715" = mypal[2],
                "qrf_0715" = mypal[10])
 
+
+myshapes_use <- c("fc_0715" = 15,
+                  "fc_aux_0715" = 15,
+                  "fc_emb_0715" = 15,
+                  "fc_aux_emb_0715" = 15,
+                  "nn_aux" = 19,
+                  "nn_aux_emb_0715" = 19,
+                  "emos_gl_0715" = 2,
+                  "emos_loc_0715" = 2,
+                  "bst_0715" = 17,
+                  "qrf_0715" = 4) # 18
+
+mylabels <- c("EMOS-gl", "EMOS-loc", "EMOS-loc-bst", "QRF" ,"FCN-aux", "FCN-emb", "FCN-aux-emb","NN-aux", "NN-aux-emb")
+mybreaks <- c("emos_gl_0715", "emos_loc_0715", "bst_0715", "qrf_0715", "fc_aux_0715", "fc_emb_0715", "fc_aux_emb_0715",  "nn_aux",   "nn_aux_emb_0715")
+
 p <- ggmap(map)
-p <- p + geom_point(data = df_best_0715_noNA, aes(x = lon, y = lat, color = model), size=ps_plot)
-p <- p + scale_x_continuous(limits = range(df_plot$lon)) +
-  scale_y_continuous(limits = range(df_plot$lat)+ c(0,-0.17))
+p <- p + geom_point(data = df_best_0715_noNA, 
+                    aes(x = lon, y = lat, color = model, shape = model), 
+                    size=ps_plot)
+p <- p + scale_shape_manual(values=myshapes_use,
+                            labels = mylabels,
+                            limits = mybreaks,
+                            name = "Best model")
+p <- p + scale_colour_manual(values = mypal_use, 
+                             labels = mylabels,
+                             limits = mybreaks,
+                             name = "Best model")
+p <- p + scale_x_continuous(limits = range(df_best_0715_noNA$lon)) +
+  scale_y_continuous(limits = range(df_best_0715_noNA$lat)+ c(0,-0.17))
 p <- p + xlab("Longitude") + ylab("Latitude")
-p <- p + scale_colour_manual(values = mypal_use, name = "Best model",
-                             labels = c("EMOS-loc-boost", "EMOS-loc", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "QRF"))
 p2 <- p
 
 g_legend<-function(a.gplot){
@@ -449,77 +610,13 @@ g_legend<-function(a.gplot){
 
 legend <- g_legend(p1)
 
-pdf("mapplot_bestmodel_v0.pdf", width = 10, height = 5, pointsize = 12)
+pdf("mapplot_bestmodel_v2.pdf", width = 10, height = 5, pointsize = 12)
 grid.arrange(p1 + theme(legend.position = 'none', plot.title = element_text(hjust = 0.5)) + ggtitle("Training 2015"),
              p2 + theme(legend.position = 'none', plot.title = element_text(hjust = 0.5)) + ggtitle("Training 2007-2015"),
              legend,
              ncol=3, nrow=1, widths=c(3/7,3/7,1/7))
 dev.off()
 
-## alternative, with individual legends:
-
-mypal <- rainbow_hcl(length(allmodels_0715))
-mypal_use <- c("fc_15" = mypal[1], 
-               "fc_aux_15" = mypal[9], 
-               "fc_emb_15" = mypal[3], 
-               "fc_aux_emb_15" = mypal[4], 
-               "nn_aux_15" = mypal[5], 
-               "nn_aux_emb_15" = mypal[8], 
-               "emos_gl_15" = mypal[6], 
-               "emos_loc_15" = mypal[7], 
-               "bst_15" = mypal[2],
-               "qrf_15" = mypal[10])
-
-p <- ggmap(map)
-p <- p + geom_point(data = df_best_15_noNA, aes(x = lon, y = lat, color = model), size=ps_plot)
-p <- p + scale_x_continuous(limits = range(df_plot$lon)) +
-  scale_y_continuous(limits = range(df_plot$lat)+ c(0,-0.17))
-p <- p + xlab("Longitude") + ylab("Latitude")
-p <- p + scale_colour_manual(values = mypal_use, name = "Best model",
-                             labels = c("EMOS-loc-boost", "EMOS-gl", "EMOS-loc", "FCN-aux", "FCN-aux-emb", "FC-emb", "NN-aux-emb", "QRF"))
-p <- p + ggtitle("Training 2015")  +
-  theme(plot.title = element_text(hjust = 0.5))
-p1 <- p
-
-mypal_use <- c("fc_0715" = mypal[1], 
-               "fc_aux_0715" = mypal[9], 
-               "fc_emb_0715" = mypal[3], 
-               "fc_aux_emb_0715" = mypal[4], 
-               "nn_aux" = mypal[5], 
-               "nn_aux_emb_0715" = mypal[8], 
-               "emos_gl_0715" = mypal[6], 
-               "emos_loc_0715" = mypal[7], 
-               "bst_0715" = mypal[2],
-               "qrf_0715" = mypal[10])
-
-p <- ggmap(map)
-p <- p + geom_point(data = df_best_0715_noNA, aes(x = lon, y = lat, color = model), size=ps_plot)
-p <- p + scale_x_continuous(limits = range(df_plot$lon)) +
-  scale_y_continuous(limits = range(df_plot$lat)+ c(0,-0.17))
-p <- p + xlab("Longitude") + ylab("Latitude")
-p <- p + scale_colour_manual(values = mypal_use, name = "Best model",
-                             labels = c("EMOS-loc-boost", "EMOS-loc", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "QRF"))
-p <- p + ggtitle("Training 2007-2015")  +
-  theme(plot.title = element_text(hjust = 0.5))
-p2 <- p
-
-g_legend<-function(a.gplot){
-  tmp <- ggplot_gtable(ggplot_build(a.gplot))
-  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
-  legend <- tmp$grobs[[leg]]
-  legend
-}
-
-legend1 <- g_legend(p1)
-legend2 <- g_legend(p2)
-
-pdf("mapplot_bestmodel_v1.pdf", width = 10, height = 5, pointsize = 12)
-grid.arrange(p1 + theme(legend.position = 'none'),
-             legend1,            
-             p2 + theme(legend.position = 'none'),
-             legend2,
-             ncol=4, nrow=1, widths=c(2/8,1/8,2/8,1/8))
-dev.off()
 
 
 ## ---------- PIT and VRH histograms ---------- ##
@@ -553,9 +650,9 @@ ymax_pit <- (ncl+1)*ymax
 
 pdf("PIT_2015.pdf", width = 15, height = 20, pointsize = 12)
 par(mfrow=c(4,3))
-modelnames <- c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-boost", "QRF", "Ensemble")
+modelnames <- c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-bst", "QRF", "Ensemble")
 desired_order <- c("Ensemble", "EMOS-gl", "EMOS-loc", 
-                   "EMOS-loc-boost", "QRF",
+                   "EMOS-loc-bst", "QRF",
                    "FCN", "FCN-aux", "FCN-emb", 
                    "FCN-aux-emb", "NN-aux-emb")
 for(i in 1:length(desired_order)){
@@ -608,9 +705,9 @@ ymax_pit <- (ncl+1)*ymax
 
 pdf("PIT_2007-15.pdf", width = 15, height = 20, pointsize = 12)
 par(mfrow=c(4,3))
-modelnames <- c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-boost", "QRF", "Ensemble")
+modelnames <- c("FCN", "FCN-aux", "FCN-emb", "FCN-aux-emb", "NN-aux", "NN-aux-emb", "EMOS-gl", "EMOS-loc", "EMOS-loc-bst", "QRF", "Ensemble")
 desired_order <- c("Ensemble", "EMOS-gl", "EMOS-loc", 
-                   "EMOS-loc-boost", "QRF",
+                   "EMOS-loc-bst", "QRF",
                    "FCN", "FCN-aux", "FCN-emb", 
                    "FCN-aux-emb", "NN-aux-emb", "NN-aux")
 for(i in 1:length(desired_order)){
