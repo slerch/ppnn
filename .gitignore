@@ -14,3 +14,4 @@ nn_postprocessing/__pycache__
 .Rdata
 .Rhistory
 /qrf_postprocessing/tuning_par_plots/
+.vscode/
