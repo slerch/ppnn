@@ -23,6 +23,10 @@ fc_aux_emb_15 <- read.csv(paste0(csv_dir, "fc_aux_emb_15.csv"))
 # drop un-used names
 fc_aux_emb_15[,!(names(fc_aux_emb_15) %in% names_keep)] <- NULL
 
+nn_aux_15 <- read.csv(paste0(csv_dir, "nn_aux_15.csv"))
+# drop un-used names
+nn_aux_15[,!(names(nn_aux_15) %in% names_keep)] <- NULL
+
 nn_aux_emb_15 <- read.csv(paste0(csv_dir, "nn_aux_emb_15.csv"))
 # drop un-used names
 nn_aux_emb_15[,!(names(nn_aux_emb_15) %in% names_keep)] <- NULL
@@ -91,6 +95,7 @@ df_crps$fc_15 <- crps_norm(data_eval$obs, fc_15$mean, fc_15$std)
 df_crps$fc_aux_15 <- crps_norm(data_eval$obs, fc_aux_15$mean, fc_aux_15$std)
 df_crps$fc_emb_15 <- crps_norm(data_eval$obs, fc_emb_15$mean, fc_emb_15$std)
 df_crps$fc_aux_emb_15 <- crps_norm(data_eval$obs, fc_aux_emb_15$mean, fc_aux_emb_15$std)
+df_crps$nn_aux_15 <- crps_norm(data_eval$obs, nn_aux_15$mean, nn_aux_15$std)
 df_crps$nn_aux_emb_15 <- crps_norm(data_eval$obs, nn_aux_emb_15$mean, nn_aux_emb_15$std)
 
 apply(df_crps[,4:ncol(df_crps)], 2, mean, na.rm = TRUE)
@@ -139,6 +144,7 @@ df_ae$fc_15 <- ae_norm(data_eval$obs, fc_15$mean, fc_15$std)
 df_ae$fc_aux_15 <- ae_norm(data_eval$obs, fc_aux_15$mean, fc_aux_15$std)
 df_ae$fc_emb_15 <- ae_norm(data_eval$obs, fc_emb_15$mean, fc_emb_15$std)
 df_ae$fc_aux_emb_15 <- ae_norm(data_eval$obs, fc_aux_emb_15$mean, fc_aux_emb_15$std)
+df_ae$nn_aux_15 <- ae_norm(data_eval$obs, nn_aux_15$mean, nn_aux_15$std)
 df_ae$nn_aux_emb_15 <- ae_norm(data_eval$obs, nn_aux_emb_15$mean, nn_aux_emb_15$std)
 
 apply(df_ae[,4:ncol(df_ae)], 2, mean, na.rm = TRUE)
@@ -177,6 +183,7 @@ df_pit$fc_15 <- pnorm(data_eval$obs, fc_15$mean, fc_15$std)
 df_pit$fc_aux_15 <- pnorm(data_eval$obs, fc_aux_15$mean, fc_aux_15$std)
 df_pit$fc_emb_15 <- pnorm(data_eval$obs, fc_emb_15$mean, fc_emb_15$std)
 df_pit$fc_aux_emb_15 <- pnorm(data_eval$obs, fc_aux_emb_15$mean, fc_aux_emb_15$std)
+df_pit$nn_aux_15 <- pnorm(data_eval$obs, nn_aux_15$mean, nn_aux_15$std)
 df_pit$nn_aux_emb_15 <- pnorm(data_eval$obs, nn_aux_emb_15$mean, nn_aux_emb_15$std)
 
 # benchmark models
@@ -202,18 +209,6 @@ df_pit <- df_pit_withNAs[complete.cases(df_pit_withNAs),]
 apply(df_pit[,4:ncol(df_pit)], 2, function(x) sum(is.na(x)))
 
 df_pit_15 <- df_pit
-
-# par(mfrow=c(3,3))
-# for(col in 4:12){
-#   if(col < 12){
-#     hist(df_pit[,col], freq = FALSE, main = names(df_pit[col]), ylim = c(0,1.8))
-#     abline(h = 1, lty = 2)
-#   }
-#   if(col == 12){
-#     hist(df_pit[,col], freq = FALSE, main = names(df_pit[col]))
-#     abline(h = 1/51, lty = 2)
-#   }
-# }
 
 ## ------------------------------------- ##
 ## 2007-2015 training
@@ -296,7 +291,7 @@ df_crps$fc_0715 <- crps_norm(data_eval$obs, fc_0715$mean, fc_0715$std)
 df_crps$fc_aux_0715 <- crps_norm(data_eval$obs, fc_aux_0715$mean, fc_aux_0715$std)
 df_crps$fc_emb_0715 <- crps_norm(data_eval$obs, fc_emb_0715$mean, fc_emb_0715$std)
 df_crps$fc_aux_emb_0715 <- crps_norm(data_eval$obs, fc_aux_emb_0715$mean, fc_aux_emb_0715$std)
-df_crps$nn_aux <- crps_norm(data_eval$obs, nn_aux_0715$mean, nn_aux_0715$std)
+df_crps$nn_aux_0715 <- crps_norm(data_eval$obs, nn_aux_0715$mean, nn_aux_0715$std)
 df_crps$nn_aux_emb_0715 <- crps_norm(data_eval$obs, nn_aux_emb_0715$mean, nn_aux_emb_0715$std)
 
 apply(df_crps[,4:ncol(df_crps)], 2, mean, na.rm = TRUE)
@@ -416,18 +411,6 @@ df_pit <- df_pit_withNAs[noNA_cases_training15,]
 apply(df_pit[,4:ncol(df_pit)], 2, function(x) sum(is.na(x)))
 
 df_pit_0715 <- df_pit
-
-# par(mfrow=c(3,3))
-# for(col in 4:12){
-#   if(col < 12){
-#     hist(df_pit[,col], freq = FALSE, main = names(df_pit[col]), ylim = c(0,1.8))
-#     abline(h = 1, lty = 2)
-#   }
-#   if(col == 12){
-#     hist(df_pit[,col], freq = FALSE, main = names(df_pit[col]))
-#     abline(h = 1/51, lty = 2)
-#   }
-# }
 
 save(df_crps_15, df_crps_0715, df_pit_15, df_pit_0715, df_ae_15, df_ae_0715,
      ind_use, noNA_cases_training15,
