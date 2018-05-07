@@ -96,7 +96,7 @@ rownames(df_BH_15) <- models_15
 df_BH_15
 
 desired_order <- c("ens", "emos_gl_15", "emos_loc_15", "bst_15", "qrf_15",
-                   "fc_15", "fc_aux_15", "fc_emb_15", "fc_aux_emb_15", "nn_aux_emb_15")
+                   "fc_15", "fc_aux_15", "fc_emb_15", "fc_aux_emb_15", "nn_aux_15", "nn_aux_emb_15")
 df_BH_15[desired_order,desired_order]
 
 library(xtable)
@@ -188,7 +188,7 @@ rownames(df_BH_0715) <- models_0715
 df_BH_0715
 
 desired_order <- c("ens", "emos_gl_0715", "emos_loc_0715", "bst_0715", "qrf_0715",
-                   "fc_0715", "fc_aux_0715", "fc_emb_0715", "fc_aux_emb_0715", "nn_aux", "nn_aux_emb_0715")
+                   "fc_0715", "fc_aux_0715", "fc_emb_0715", "fc_aux_emb_0715", "nn_aux_0715", "nn_aux_emb_0715")
 df_BH_0715[desired_order,desired_order]
 
 library(xtable)
