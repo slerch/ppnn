@@ -1,6 +1,6 @@
 ## Overview of results 
 
-(...) = not in paper
+Models with values in parentheses are not included in the paper.
 
 ### Training 2015 only
 
