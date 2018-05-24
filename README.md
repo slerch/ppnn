@@ -4,11 +4,11 @@ This repository provides Python and R code accompanying the paper
 
 > Rasp, S. and Lerch, S. (2018).
 > Neural networks for post-processing ensemble weather forecasts.
-> available at ...
+> available at https://arxiv.org/abs/1805.09091
 
 In particular, code for data retrieval and processing as well as implementation and evaluation of benchmark and network models is available. 
 
-This study demonstrates how neural networks can be used for distributional regression post-processing of ensemble weather forecasts. The neural network models significantly outperform state-of-the-art post-processing techniques while being computationally more efficient. The main advantages of using neural networks include the capability of capturing nonlinear relations between arbitrary predictors and distribution parameters without having to specify appropriate link functions, and the ease of adding station information in a global model by using embeddings.
+This study demonstrates how neural networks can be used for post-processing of ensemble weather forecasts in a distributional regression framework. The neural network models significantly outperform state-of-the-art post-processing techniques while being computationally more efficient. The main advantages of using neural networks include the capability of capturing nonlinear relations between arbitrary predictors and distribution parameters without having to specify appropriate link functions, and the ease of adding station information in a global model by using embeddings.
 
 ## Data
 
