@@ -1,7 +1,7 @@
 rm(list=ls())
 
-load("CRPS_AE_PIT_all.Rdata")
-load("CRPS_AE_PIT_ens.Rdata")
+load("/media/sebastian/Elements/Postproc_NN/CRPS_AE_PIT_all.Rdata")
+load("/media/sebastian/Elements/Postproc_NN/CRPS_AE_PIT_ens.Rdata")
 load("/media/sebastian/Elements/Postproc_NN/data/data_eval_stationInfo.Rdata")
 
 ps_plot <- 2
