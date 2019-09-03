@@ -12,6 +12,8 @@ This study demonstrates how neural networks can be used for post-processing of e
 
 ## Data
 
+Email us if you need access to the datasets from the paper!
+
 ### Forecasts
 
 **ECMWF forecasts from TIGGE dataset**
