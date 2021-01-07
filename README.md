@@ -12,7 +12,7 @@ This study demonstrates how neural networks can be used for post-processing of e
 
 ## Data
 
-The data needed to reproduce the results can be found here: 
+The data needed to reproduce the results (see `RL18_replication.ipynb`) can be found here: 
 
 > Rasp, Stephan (2021): PPNN full data (feather format). figshare. Dataset. https://doi.org/10.6084/m9.figshare.13516301.v1 
 
