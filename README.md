@@ -14,7 +14,7 @@ This study demonstrates how neural networks can be used for post-processing of e
 
 The data needed to reproduce the results can be found here: 
 
-> Rasp, Stephan (2020): Interpolated PPNN data. figshare. Dataset. https://doi.org/10.6084/m9.figshare.9762980.v1
+> Rasp, Stephan (2021): PPNN full data (feather format). figshare. Dataset. https://doi.org/10.6084/m9.figshare.13516301.v1 
 
 ### Forecasts
 
