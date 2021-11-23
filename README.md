@@ -4,7 +4,8 @@ This repository provides Python and R code accompanying the paper
 
 > Rasp, S. and Lerch, S. (2018).
 > Neural networks for post-processing ensemble weather forecasts.
-> available at https://arxiv.org/abs/1805.09091
+> Monthly Weather Review, 146, 3885-3900
+> https://doi.org/10.1175/MWR-D-18-0187.1 (preprint version available at https://arxiv.org/abs/1805.09091)
 
 In particular, code for data retrieval and processing as well as implementation and evaluation of benchmark and network models is available. 
 
@@ -12,7 +13,7 @@ This study demonstrates how neural networks can be used for post-processing of e
 
 ## Data
 
-The data needed to reproduce the results (see `RL18_replication.ipynb`) can be found here: 
+The data needed to reproduce the results (see `RL18_replication.ipynb` for an implementation of the main model) can be found here: 
 
 > Rasp, Stephan (2021): PPNN full data (feather format). figshare. Dataset. https://doi.org/10.6084/m9.figshare.13516301.v1 
 
